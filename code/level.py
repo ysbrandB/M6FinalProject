@@ -6,7 +6,7 @@ from settings import tile_size
 class Level:
     def __init__(self, level_data, surface):
         self.display_surface=surface
-
+        self.tile_list = import_cut_graphics('../imgs/terrain/mario_terrain.png')
         terrain_layout=import_csv_layout(level_data['terrain'])
         self.terrain_sprites=self.create_tile_group(terrain_layout, 'terrain')
 
@@ -18,9 +18,8 @@ class Level:
                     x= column_index*tile_size
                     y=row_index*tile_size
                 if type=='terrain' or type=='scenery':
-                    terrain_tile_list=import_cut_graphics('../imgs/terrain/mario_terrain.png')
-                    if(int(value)<len(terrain_tile_list)):
-                        tile_surface=terrain_tile_list[int(value)]
+                    if(int(value)<len(self.tile_list)):
+                        tile_surface=self.tile_list[int(value)]
                         sprite=StaticTile(tile_size, x, y, tile_surface)
                         sprite_group.add(sprite)
         return sprite_group
