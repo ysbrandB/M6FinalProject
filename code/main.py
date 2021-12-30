@@ -4,19 +4,18 @@ from level import Level
 from game_data import level_0
 pygame.init()
 
-screen=pygame.display.set_mode((screen_width,screen_height))
-clock=pygame.time.Clock()
+screen = pygame.display.set_mode((screen_width, screen_height))
+clock = pygame.time.Clock()
 
-
-from game_data import level_0
-level=Level(level_0,screen)
+level = Level(level_0, screen)
+effect = pygame.mixer.Sound('../sfx/intro.wav')
+effect.play()
 
 while 1:
     for event in pygame.event.get():
-        if event.type==pygame.QUIT:
+        if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-
     screen.fill('BLACK')
     level.run()
     pygame.display.update()
