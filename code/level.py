@@ -2,6 +2,7 @@ import pygame
 from tiles import Tile, StaticTile
 from helpers import *
 from settings import tile_size
+from player import Player
 
 
 class Level:
@@ -12,9 +13,11 @@ class Level:
         for layer in level_data:
             layer_dict = level_data[layer]
             layer_layout = import_csv_layout(layer_dict['path'])
-
-            # treat everything as static for now, should be refactored!
-            self.static_sprites[layer] = self.create_tile_group(layer_layout, layer_dict['type'])
+            layer_type = layer_dict['type']
+            if layer_type == 'static':
+                self.static_sprites[layer] = self.create_tile_group(layer_layout, 'static')
+            elif layer_type == 'player':
+                self.player = self.create_player(layer_layout)
 
     def create_tile_group(self, layout, _type):
         sprite_group = pygame.sprite.Group()
@@ -29,6 +32,18 @@ class Level:
                         sprite_group.add(sprite)
         return sprite_group
 
-    def run(self):
+    def create_player(self, layout):
+        for row_index, row in enumerate(layout):
+            for column_index, value in enumerate(row):
+                value = int(value)
+                if value != -1:
+                    x = column_index * tile_size
+                    y = row_index * tile_size
+                    player = Player(x, y, self)
+                    return player
+
+    def run(self, dt):
         for sprite_group in self.static_sprites:
             self.static_sprites[sprite_group].draw(self.display_surface)
+        if self.player:
+            self.player.live(dt)

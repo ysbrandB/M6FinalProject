@@ -11,5 +11,13 @@ level_0 = {
     'scenery2': {
         'path': '../levels/level_data/0/level0_Additional Scenery.csv',
         'type': 'static'
+    },
+    'player': {
+        'path': '../levels/level_data/0/level0_Mario.csv',
+        'type': 'player'
     }
+}
+
+player = {
+    'sprite_sheet_path': '../imgs/player/shroomaddict.png'
 }
