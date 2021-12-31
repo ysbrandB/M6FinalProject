@@ -46,4 +46,4 @@ class Level:
         for sprite_group in self.static_sprites:
             self.static_sprites[sprite_group].draw(self.display_surface)
         if self.player:
-            self.player.live(dt)
+            self.player.live(dt, self.static_sprites)

@@ -5,20 +5,19 @@ import pygame
 from game_data import level_0
 from level import Level
 from settings import *
-import numpy as np
 pygame.init()
 
-game_screen_ratio = game_screen_width/game_screen_height
+game_screen_ratio = game_screen_width / game_screen_height
 infoObject = pygame.display.Info()
 
-screen = pygame.display.set_mode((432,480), pygame.RESIZABLE)
+screen = pygame.display.set_mode((432, 480), pygame.RESIZABLE)
 game_screen = pygame.Surface((game_screen_width, game_screen_height))
 clock = pygame.time.Clock()
 
 resized_width = screen.get_height() * game_screen_ratio
-resized_height=screen.get_height()
+resized_height = screen.get_height()
 resized_x_offset = (screen.get_width() - resized_width) / 2
-resized_y_offset=0
+resized_y_offset = 0
 
 level = Level(level_0, game_screen)
 player = level.player
@@ -44,7 +43,10 @@ while 1:
                 case pygame.K_SPACE:
                     player.jump()
                 case pygame.K_LSHIFT:
-                    player.speed_multiplier = 1.5
+                    player.speed_multiplier = player.RUNNING_SPEED
+                case pygame.K_e:
+                    player.position.x = tile_size * horizontal_tile_number / 2
+                    player.position.y = tile_size * vertical_tile_number / 2 - tile_size
 
         elif event.type == pygame.KEYUP:
             match event.key:
@@ -57,18 +59,17 @@ while 1:
                         player.velocity.y *= 0.5
                         player.jumping = False
                 case pygame.K_LSHIFT:
-                    player.speed_multiplier = 1.0
+                    player.speed_multiplier = player.DEFAULT_SPEED
         elif event.type == pygame.VIDEORESIZE:
             resized_width = screen.get_height() * (game_screen_width / game_screen_height)
             resized_height = screen.get_height()
-            resized_y_offset=0
-            if(resized_width>screen.get_width()):
-                resized_width=screen.get_width()
-                resized_height=resized_width/game_screen_ratio
-                resized_y_offset = (screen.get_height()-resized_height)/2
+            resized_y_offset = 0
+            if resized_width > screen.get_width():
+                resized_width = screen.get_width()
+                resized_height = resized_width / game_screen_ratio
+                resized_y_offset = (screen.get_height() - resized_height) / 2
             resized_x_offset = (screen.get_width() - resized_width) / 2
-
-    screen.fill('BLACK')
+    game_screen.fill(pygame.Color("#9494FF"))
     level.run(dt)
     resized_screen = pygame.transform.scale(game_screen, (resized_width, resized_height))
     screen.blit(resized_screen, (resized_x_offset, resized_y_offset))
