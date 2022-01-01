@@ -14,7 +14,6 @@ class Player:
         self.right = False
         self.flipped = False
         self.jumping = False
-        self.running = False
         self.grounded = False
 
         self.gravity = 0.09
@@ -31,6 +30,16 @@ class Player:
         self.velocity = pygame.Vector2(0, 0)
         self.acceleration = pygame.Vector2(0, self.gravity)
 
+        self.animation = player['animation_idle']
+        self.STILL = 0
+        self.WALKING = 1
+        self.RUNNING = 2
+        self.JUMPING = 3
+        self.current_state = self.STILL
+        self.last_state = self.STILL
+        self.frame_index = 0
+        self.frame_time = 0
+
         # temporary!
         self.ground_level = y
 
@@ -40,6 +49,8 @@ class Player:
         self.horizontal_movement(dt)
         self.vertical_movement(dt)
         self.collision(tiles)
+        self.update_animation_state()
+        self.animate(dt)
         self.draw()
 
     def horizontal_movement(self, dt):
@@ -52,7 +63,7 @@ class Player:
         self.velocity.x += self.acceleration.x * dt
         self.velocity.x = max(-self.max_hor_vel * self.speed_multiplier,
                               min(self.max_hor_vel * self.speed_multiplier, self.velocity.x))
-        if abs(self.velocity.x) < 0.01:
+        if abs(self.velocity.x) < 0.03:
             self.velocity.x = 0
         self.position.x += self.velocity.x * dt + (self.acceleration.x * 0.5) * (dt * dt)
 
@@ -63,7 +74,6 @@ class Player:
         self.position.y += self.velocity.y * dt + (self.acceleration.x * 0.5) * (dt * dt)
 
     def collision(self, tiles):
-        #tiles = self.level.static_sprites
         found_floor = False
         for tile_group in tiles:
             if tile_group == "terrain":
@@ -92,6 +102,7 @@ class Player:
                             self.position.y = tile_y - size
                             self.velocity.y = 0
                             self.grounded = True
+                            self.jumping = False
                             found_floor = True
         if not found_floor:
             self.grounded = False
@@ -103,11 +114,44 @@ class Player:
             self.grounded = False
             self.jump_snd.play()
 
-    def damn_idk_is_there_a_ceiling(self):
-        pass
-
     def draw(self):
-        image = pygame.transform.flip(self.sprites[0], self.flipped, 0)
-        self.surface.blit(image, (self.position.x, self.position.y))
+        sprite = self.get_current_sprite()
+        to_draw = pygame.transform.flip(sprite, self.flipped, 0)
+        self.surface.blit(to_draw, (self.position.x, self.position.y))
 
+    def update_animation_state(self):
+        if self.jumping and not self.grounded:
+            self.current_state = self.JUMPING
+            return
+        if self.left ^ self.right:
+            if self.speed_multiplier == self.RUNNING_SPEED:
+                self.current_state = self.RUNNING
+                return
+            else:
+                self.current_state = self.WALKING
+                return
+        self.current_state = self.STILL
 
+    def animate(self, dt):
+        if not self.current_state == self.last_state:
+            self.frame_index = 0
+            self.last_state = self.current_state
+        self.animation = player['animation_idle']
+        match self.current_state:
+            case self.WALKING:
+                self.animation = player['animation_walking']
+            case self.RUNNING:
+                self.animation = player['animation_running']
+            case self.JUMPING:
+                self.animation = player['animation_jumping']
+
+        # reminder that dt has already been multiplied by 0.1, therefore we multiply by 0.01 to get seconds
+        self.frame_time += dt * 0.01
+        if self.frame_time >= 1 / self.animation['fps']:
+            self.frame_time = 0
+            self.frame_index += 1
+            if self.frame_index > len(self.animation['frames']) - 1:
+                self.frame_index = 0
+
+    def get_current_sprite(self):
+        return self.sprites[self.animation['frames'][self.frame_index]]

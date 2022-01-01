@@ -19,5 +19,21 @@ level_0 = {
 }
 
 player = {
-    'sprite_sheet_path': '../imgs/player/shroomaddict.png'
+    'sprite_sheet_path': '../imgs/player/shroomaddict.png',
+    'animation_idle': {
+        'frames': [0],
+        'fps': 1,
+    },
+    'animation_walking': {
+        'frames': [1, 2, 3],
+        'fps': 10
+    },
+    'animation_running': {
+        'frames': [1, 2, 3],
+        'fps': 16
+    },
+    'animation_jumping': {
+        'frames': [5],
+        'fps': 1
+    }
 }

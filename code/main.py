@@ -57,7 +57,6 @@ while 1:
                 case pygame.K_SPACE:
                     if player.jumping:
                         player.velocity.y *= 0.5
-                        player.jumping = False
                 case pygame.K_LSHIFT:
                     player.speed_multiplier = player.DEFAULT_SPEED
         elif event.type == pygame.VIDEORESIZE:
