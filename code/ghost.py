@@ -11,9 +11,6 @@ class Ghost:
         self.sprites=self.sprites[sprite_row_start:sprite_row_start+8]
         self.position=pygame.math.Vector2(x,y)
         self.surface=level.display_surface
-        print(ghosts.items())
-        # listOfKeys = [key for (key, value) in ghosts.items() if value == self.value]
-        # print(listOfKeys)
 
         self.animation=ghosts["animation_left"]
         self.frame_index = 0
