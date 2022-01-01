@@ -19,6 +19,10 @@ level_0 = {
     'ghosts': {
         'path': '../levels/level_data/0/level0_Pacman.csv',
         'type': 'ghosts'
+    },
+    'coins': {
+        'path': '../levels/level_data/0/level0_Coins.csv',
+        'type': 'coin'
     }
 }
 
@@ -61,4 +65,12 @@ ghosts = {
         'frames': [6, 7],
         'fps': 7
     }
+}
+
+coins={
+    'sprite_sheet_path': '../imgs/coin/coin.png',
+        'animation_idle': {
+            'frames': [0,1,2,3,4,5,5,6,7],
+            'fps': 10
+        }
 }
