@@ -10,7 +10,7 @@ pygame.init()
 game_screen_ratio = game_screen_width / game_screen_height
 infoObject = pygame.display.Info()
 
-screen = pygame.display.set_mode((432, 480), pygame.RESIZABLE)
+screen = pygame.display.set_mode((1.5*432, 1.5*480), pygame.RESIZABLE)
 game_screen = pygame.Surface((game_screen_width, game_screen_height))
 clock = pygame.time.Clock()
 
@@ -21,6 +21,7 @@ resized_y_offset = 0
 
 level = Level(level_0, game_screen)
 player = level.player
+ghosts = level.ghosts
 intro = pygame.mixer.Sound('../sfx/intro.wav')
 intro.play()
 
@@ -41,6 +42,8 @@ while 1:
                     player.right = True
                     player.flipped = False
                 case pygame.K_SPACE:
+                    player.jump()
+                case pygame.K_w:
                     player.jump()
                 case pygame.K_LSHIFT:
                     player.speed_multiplier = player.RUNNING_SPEED

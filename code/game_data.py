@@ -15,6 +15,10 @@ level_0 = {
     'player': {
         'path': '../levels/level_data/0/level0_Mario.csv',
         'type': 'player'
+    },
+    'ghosts': {
+        'path': '../levels/level_data/0/level0_Pacman.csv',
+        'type': 'ghosts'
     }
 }
 
@@ -35,5 +39,26 @@ player = {
     'animation_jumping': {
         'frames': [5],
         'fps': 1
+    }
+}
+
+
+ghosts = {
+    'sprite_sheet_path': '../imgs/ghosts/ghost_sprites.png',
+    'animation_right': {
+        'frames': [0,1],
+        'fps': 7,
+    },
+    'animation_left': {
+        'frames': [2, 3],
+        'fps': 7
+    },
+    'animation_up': {
+        'frames': [4,5],
+        'fps': 7
+    },
+    'animation_down': {
+        'frames': [6,7],
+        'fps': 7
     }
 }

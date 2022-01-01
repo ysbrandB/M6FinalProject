@@ -3,7 +3,7 @@ from tiles import Tile, StaticTile
 from helpers import *
 from settings import tile_size
 from player import Player
-
+from ghost import Ghost
 
 class Level:
     def __init__(self, level_data, surface):
@@ -18,6 +18,8 @@ class Level:
                 self.static_sprites[layer] = self.create_tile_group(layer_layout, 'static')
             elif layer_type == 'player':
                 self.player = self.create_player(layer_layout)
+            elif layer_type=='ghosts':
+                self.ghosts=self.create_ghosts(layer_layout)
 
     def create_tile_group(self, layout, _type):
         sprite_group = pygame.sprite.Group()
@@ -42,8 +44,23 @@ class Level:
                     player = Player(x, y, self)
                     return player
 
+    def create_ghosts(self, layout):
+        ghosts = []
+        for row_index, row in enumerate(layout):
+            for column_index, value in enumerate(row):
+                value = int(value)
+                if value != -1:
+                    x = column_index * tile_size
+                    y = row_index * tile_size
+                    ghost = Ghost(x, y, self, value)
+                    ghosts.append(ghost)
+        return ghosts
+
     def run(self, dt):
         for sprite_group in self.static_sprites:
             self.static_sprites[sprite_group].draw(self.display_surface)
         if self.player:
             self.player.live(dt, self.static_sprites)
+        if self.ghosts:
+            for ghost in self.ghosts:
+                ghost.draw(dt)
