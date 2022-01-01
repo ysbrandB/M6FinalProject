@@ -46,7 +46,7 @@ player = {
 ghosts = {
     'sprite_sheet_path': '../imgs/ghosts/ghost_sprites.png',
     'animation_right': {
-        'frames': [0,1],
+        'frames': [0, 1],
         'fps': 7,
     },
     'animation_left': {
@@ -54,11 +54,11 @@ ghosts = {
         'fps': 7
     },
     'animation_up': {
-        'frames': [4,5],
+        'frames': [4, 5],
         'fps': 7
     },
     'animation_down': {
-        'frames': [6,7],
+        'frames': [6, 7],
         'fps': 7
     }
 }

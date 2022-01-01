@@ -3,16 +3,16 @@ from game_data import ghosts
 import pygame
 class Ghost:
     def __init__(self, x, y, level, value):
-        self.x=x
-        self.y=y
-        self.value=value%8
+        self.x = x
+        self.y =y
+        self.value = value % 8
         self.sprites = import_cut_graphics(ghosts['sprite_sheet_path'])
-        sprite_row_start=int(value/7)*8
-        self.sprites=self.sprites[sprite_row_start:sprite_row_start+8]
-        self.position=pygame.math.Vector2(x,y)
-        self.surface=level.display_surface
+        sprite_row_start = int(value / 7) * 8
+        self.sprites = self.sprites[sprite_row_start:sprite_row_start + 8]
+        self.position = pygame.Vector2(x, y)
+        self.surface = level.display_surface
 
-        self.animation=ghosts["animation_left"]
+        self.animation = ghosts["animation_left"]
         self.frame_index = 0
         self.frame_time = 0
 

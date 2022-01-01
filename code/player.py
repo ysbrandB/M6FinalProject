@@ -19,12 +19,13 @@ class Player:
         self.gravity = 0.09
         self.friction = -0.12
         self.max_hor_vel = 3.5
-        self.max_ver_vel = 2.5
+        self.max_ver_vel = 2.11
         self.initial_acceleration = 0.1
 
         self.DEFAULT_SPEED = 1.0
-        self.RUNNING_SPEED = 1.4
+        self.RUNNING_SPEED = 1.45
         self.speed_multiplier = self.DEFAULT_SPEED  # used for e.g. running
+        self.jump_speed_multiplier = 1.5
 
         self.position = pygame.Vector2(x, y)
         self.velocity = pygame.Vector2(0, 0)
@@ -80,17 +81,6 @@ class Player:
                 for tile in tiles[tile_group]:
                     tile_x, tile_y, size = tile.rect[:-1]
 
-                    # horizontal collisions
-                    if abs(self.position.y - tile_y) < size - 4:
-                        # left wall collision
-                        if tile_x + size >= self.position.x > tile_x:
-                            self.position.x = tile_x + size
-                            self.acceleration.x *= 0.75
-                        # right wall collision
-                        if self.position.x + size > tile_x > self.position.x - size:
-                            self.position.x = tile_x - size
-                            self.acceleration.x *= 0.75
-
                     # vertical collisions
                     if abs(self.position.x - tile_x) < size - 4:
                         # ceiling
@@ -104,13 +94,24 @@ class Player:
                             self.grounded = True
                             self.jumping = False
                             found_floor = True
+
+                    # horizontal collisions
+                    if abs(self.position.y - tile_y) < size - 4:
+                        # left wall collision
+                        if tile_x + size >= self.position.x > tile_x:
+                            self.position.x = tile_x + size
+                            self.acceleration.x *= 0.75
+                        # right wall collision
+                        if self.position.x + size > tile_x > self.position.x - size:
+                            self.position.x = tile_x - size
+                            self.acceleration.x *= 0.75
         if not found_floor:
             self.grounded = False
 
     def jump(self):
         if self.grounded:
             self.jumping = True
-            self.velocity.y = -self.max_ver_vel - 1
+            self.velocity.y = -self.max_ver_vel * self.jump_speed_multiplier
             self.grounded = False
             self.jump_snd.play()
 

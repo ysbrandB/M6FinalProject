@@ -25,7 +25,7 @@ ghosts = level.ghosts
 intro = pygame.mixer.Sound('../sfx/intro.wav')
 intro.play()
 
-target_fps = 165
+target_fps = 60
 
 while 1:
     dt = clock.tick(target_fps) * 0.1
