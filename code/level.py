@@ -11,6 +11,7 @@ class Level:
         self.display_surface = surface
         self.tile_list = import_cut_graphics('../imgs/terrain/mario_terrain.png')
         self.static_sprites = dict()
+        self.font=font = pygame.font.SysFont(None, 24)
         for layer in level_data:
             layer_dict = level_data[layer]
             layer_layout = import_csv_layout(layer_dict['path'])
@@ -23,6 +24,7 @@ class Level:
                 self.ghosts = self.create_ghosts(layer_layout)
             elif layer_type == 'coin':
                 self.coins = self.create_coins(layer_layout)
+                self.total_coins=len(self.coins)
 
     def create_tile_group(self, layout, _type):
         sprite_group = pygame.sprite.Group()
@@ -75,10 +77,13 @@ class Level:
         for sprite_group in self.static_sprites:
             self.static_sprites[sprite_group].draw(self.display_surface)
         if self.player:
-            self.player.live(dt, self.static_sprites)
+            self.player.live(dt, self.static_sprites, self.coins)
         if self.ghosts:
             for ghost in self.ghosts:
                 ghost.draw(dt)
         if self.coins:
             for coin in self.coins:
                 coin.draw(dt)
+        if(self.player):
+            img = self.font.render(f"{self.player.collected_coins}/{self.total_coins}", True, (255,255,255))
+            self.display_surface.blit(img, (self.display_surface.get_width()-7*tile_size, self.display_surface.get_height()-tile_size))

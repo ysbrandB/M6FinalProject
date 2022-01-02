@@ -15,7 +15,7 @@ class Player:
         self.flipped = False
         self.jumping = False
         self.grounded = False
-
+        self.collected_coins=0
         self.gravity = 0.09
         self.friction = -0.12
         self.max_hor_vel = 3.5
@@ -46,7 +46,8 @@ class Player:
 
         self.jump_snd = pygame.mixer.Sound('../sfx/jump.wav')
 
-    def live(self, dt, tiles):
+    def live(self, dt, tiles, coins):
+        self.collect_coins(coins)
         self.horizontal_movement(dt)
         self.vertical_movement(dt)
         self.collision(tiles)
@@ -156,3 +157,9 @@ class Player:
 
     def get_current_sprite(self):
         return self.sprites[self.animation['frames'][self.frame_index]]
+
+    def collect_coins(self, coins):
+        for coin in coins:
+            if self.position.distance_to(coin.position)<5:
+                self.collected_coins+=1
+                coins.remove(coin)

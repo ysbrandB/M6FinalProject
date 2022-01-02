@@ -70,7 +70,7 @@ ghosts = {
 coins={
     'sprite_sheet_path': '../imgs/coin/coin.png',
         'animation_idle': {
-            'frames': [0,1,2,3,4,5,5,6,7],
+            'frames': [0,1,2,3,4,5,6,7],
             'fps': 10
         }
 }
