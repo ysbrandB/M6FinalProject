@@ -53,7 +53,7 @@ class Level:
                 return Player(tile_size, position, frames, player_data)
             case 'ghosts':
                 frames = self.images['ghosts']
-                return Ghost(tile_size, position, frames, ghosts_data, tile_num, [])
+                return Ghost(tile_size, position, frames, ghosts_data, tile_num)
             case 'coin':
                 frames = self.images['coins']
                 return Coin(tile_size / 2, position, frames, coins_data)
@@ -77,7 +77,7 @@ class Level:
                     tile.draw(self.display_surface)
         self.player.live(dt, self.display_surface, self.tiles, self.coins)
         for ghost in self.ghosts:
-            ghost.live(dt, self.display_surface, self.player)
+            ghost.live(dt, self.display_surface, self.player, self.passages)
         for coin in self.coins:
             coin.live(dt, self.display_surface)
 

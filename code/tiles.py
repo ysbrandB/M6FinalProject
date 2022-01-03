@@ -77,7 +77,13 @@ class StaticTile(SpriteTile):
 class PassageTile(Tile):
     def __init__(self, size, grid_position):
         super().__init__(size, grid_position)
-
+        self.parent = None
+        self.score = None
+        self.distance = None
+    def reset(self):
+        self.parent = None
+        self.score = None
+        self.distance = None
     # even though this method exists, the passage tile is still flagged as non-drawable!
     def draw_debug_square(self, surface):
         red_square = pygame.Surface((self.size, self.size))
