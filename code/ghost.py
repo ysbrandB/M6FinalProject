@@ -6,9 +6,10 @@ import bisect
 from empty_path_element import Empty_element
 import pprint
 
+
 class Ghost:
     def __init__(self, x, y, level, value, empty_tiles):
-        self.dir = pygame.math.Vector2(0,0)
+        self.dir = pygame.math.Vector2(0, 0)
         self.value = value % 8
         self.sprites = import_cut_graphics(ghosts['sprite_sheet_path'])
         sprite_row_start = int(value / 7) * 8
@@ -38,10 +39,11 @@ class Ghost:
         self.draw(dt)
         self.tile_position = pygame.math.Vector2(round(self.position.x / tile_size), round(self.position.y / tile_size))
         self.a_star_search(self.level.player)
+        self.position+=(self.dir.elementwise()*0.001)
 
     def a_star_search(self, target):
         target_position = Empty_element(pygame.math.Vector2(round(target.position.x / tile_size),
-                                                    round(target.position.y / tile_size)))
+                                                            round(target.position.y / tile_size)))
         queue = [Empty_element(self.tile_position)]
         visited = []
 
@@ -57,17 +59,17 @@ class Ghost:
                             next_node.set_parent(current_node)
                             new_distance = (next_node.get_distance() if next_node.get_distance() else 0)
                             new_score = new_distance + next_node.manhattan_distance(target_position)
-                            if (next_node not in queue):
+                            if next_node not in queue:
                                 next_node.set_score(new_score)
                                 bisect.insort(queue, next_node)
-                            elif (old_distance < new_distance):
+                            elif old_distance < new_distance:
                                 next_node.set_score(new_score)
                                 temp = queue.pop(queue.index(next_node))
                                 bisect.insort_left(queue, temp)
             else:
                 break
-        print("The number of visited nodes is: {}".format(len(visited)))
-        pprint.pprint(queue)
+        if len(queue)>0:
+            self.set_direction(queue.pop(0))
 
         for tile in self.empty_tiles:
             tile.reset_state()
@@ -83,7 +85,10 @@ class Ghost:
                 for ghost in self.level.ghosts:
                     if ghost != self:
                         if ghost.tile_position == neighbour:
-                            ghost_on_tile=True
+                            ghost_on_tile = True
                 if not ghost_on_tile:
                     neighbours.append(empty)
         return neighbours
+
+    def set_direction(self, new_target):
+        self.dir= self.position-new_target.position
