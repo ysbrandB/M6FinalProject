@@ -73,7 +73,7 @@ class Level:
     def run(self, dt):
         for tile_group in self.tiles:
             for tile in self.tiles[tile_group]:
-                if tile.drawable:
+                if tile.drawable and tile.static:
                     tile.draw(self.display_surface)
         self.player.live(dt, self.display_surface, self.tiles, self.coins)
         for ghost in self.ghosts:

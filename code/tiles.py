@@ -8,6 +8,7 @@ class Tile:
         self.grid_position = grid_position
         self.position = grid_position * global_tile_size
         self.drawable = False
+        self.static = False
         self.neighbours = []
 
     def __eq__(self, other):
@@ -67,6 +68,7 @@ class StaticTile(SpriteTile):
         rotate = bool(flags & 0b0010)
         self.image = pygame.transform.rotate(self.image, -90 * rotate)
         self.image = pygame.transform.flip(self.image, flip_horizontal != rotate, flip_vertical)
+        self.static = True
 
 
 class PassageTile(Tile):
