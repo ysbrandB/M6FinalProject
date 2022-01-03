@@ -143,8 +143,7 @@ class Player(AnimatableTile):
 
     def collect_coins(self, coins):
         for coin in coins:
-            offset_position = pygame.Vector2(self.position.x + self.size / 2, self.position.y + self.size / 2)
-            if offset_position.distance_to(coin.position) < 10:
+            if self.get_center().distance_to(coin.get_center()) < 10:
                 self.collected_coins += 1
                 coins.remove(coin)
                 self.coin_snd.play()

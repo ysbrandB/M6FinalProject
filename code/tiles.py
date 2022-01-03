@@ -24,6 +24,9 @@ class Tile:
             if other in self.neighbours and other.grid_position.distance_to(self.grid_position) != 1:
                 self.neighbours.remove(other)
 
+    def get_center(self):
+        return pygame.Vector2(self.position.x + self.size / 2, self.position.y + self.size / 2)
+
 
 class SpriteTile(Tile):
     def __init__(self, size, grid_position, image):
