@@ -9,9 +9,6 @@ class Empty_element:
         self.distance = None
         self.score = None
 
-    def __eq__(self, other):
-        return self.position == other.position
-
     def __lt__(self, other):
         return (self.score is not None) and (other.score is None or self.score < other.score)
 

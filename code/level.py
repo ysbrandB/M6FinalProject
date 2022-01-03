@@ -1,72 +1,90 @@
-import pygame
-from tiles import StaticTile
+from tiles import *
 from helpers import *
-from settings import tile_size, vertical_tile_number, horizontal_tile_number
+from settings import tile_size
 from player import Player
 from ghost import Ghost
 from coin import Coin
-from empty_path_element import Empty_element
+from game_data import player as player_data, ghosts as ghosts_data, coins as coins_data
+
 
 class Level:
     def __init__(self, level_data, surface):
         self.display_surface = surface
-        self.tile_list = import_cut_graphics('../imgs/terrain/mario_terrain.png')
-        self.static_sprites = dict()
+        self.level_data = level_data
+        self.images = self.get_parsed_images()
+        self.tiles = dict()
+        self.tiles['ghosts'] = []
+        self.tiles['coins'] = []
         self.font = pygame.font.SysFont(None, 24)
-        self.coins = []
-        self.ghosts = []
-        self.empty_squares = set()
 
-        for layer in level_data:
-            layer_dict = level_data[layer]
+        layers = level_data['layers']
+        for layer in layers:
+            layer_dict = layers[layer]
             layer_layout = import_csv_layout(layer_dict['path'])
             layer_type = layer_dict['type']
-            if layer_type == 'static':
-                self.static_sprites[layer] = self.create_tile_group(layer_layout)
-            else:
-                self.parse_other(layer_layout, layer_type)
-        self.total_coins = len(self.coins)
+            layer_tiles = []
+            tile_num = 0
+            for row_index, row in enumerate(layer_layout):
+                for column_index, value in enumerate(row):
+                    tile_id = int(value)
+                    if tile_id != -1:
+                        grid_position = pygame.Vector2(column_index, row_index)
+                        layer_tiles.append(self.create_tile(layer_type, grid_position, tile_id, tile_num))
+                        tile_num += 1
+            self.tiles[layer] = layer_tiles
+        self.total_coins = len(self.tiles['coins'])
+        self.player = self.tiles['player'][0]
+        self.ghosts = self.tiles['ghosts']
+        self.coins = self.tiles['coins']
+        self.passages = self.tiles['ghost_passage']
 
-    def create_tile_group(self, layout):
-        sprite_group = pygame.sprite.Group()
-        for row_index, row in enumerate(layout):
-            for column_index, value in enumerate(row):
-                value = int(value)
-                if value != -1:
-                    x = column_index * tile_size
-                    y = row_index * tile_size
-                    sprite = StaticTile(tile_size, x, y, value, self.tile_list)
-                    sprite_group.add(sprite)
-                else:
-                    self.empty_squares.add(Empty_element(pygame.math.Vector2(row_index,column_index)))
-        return sprite_group
+        for tile in self.passages:
+            tile.find_neighbours(self.passages)
 
-    def parse_other(self, layout, _type):
-        for row_index, row in enumerate(layout):
-            for column_index, value in enumerate(row):
-                value = int(value)
-                if value != -1:
-                    x = column_index * tile_size
-                    y = row_index * tile_size
-                    if _type == 'player':
-                        self.player = Player(x, y, self)
-                    elif _type == 'ghosts':
-                        self.ghosts.append(Ghost(x, y, self, value, self.empty_squares))
-                    elif _type == 'coin':
-                        self.coins.append(Coin(x, y, self))
+    def create_tile(self, _type, position, tile_id, tile_num):
+        match _type:
+            case 'static':
+                image, flags = self.extract_image_and_flags(tile_id)
+                return StaticTile(tile_size, position, image, flags)
+            case 'passage':
+                return PassageTile(tile_size, position)
+            case 'player':
+                frames = self.images['player']
+                return Player(tile_size, position, frames, player_data)
+            case 'ghosts':
+                frames = self.images['ghosts']
+                return Ghost(tile_size, position, frames, ghosts_data, tile_num, [])
+            case 'coin':
+                frames = self.images['coins']
+                return Coin(tile_size / 2, position, frames, coins_data)
+        return _type
+
+    def extract_image_and_flags(self, tile_id):
+        return self.images['level'][tile_id & 0x0fffffff], tile_id >> 28
+
+    def get_parsed_images(self):
+        images = dict()
+        images['level'] = import_cut_graphics(self.level_data['tiles_sheet_path'])
+        images['player'] = import_cut_graphics(player_data['sprite_sheet_path'])
+        images['ghosts'] = import_cut_graphics(ghosts_data['sprite_sheet_path'])
+        images['coins'] = import_cut_graphics(coins_data['sprite_sheet_path'])
+        return images
 
     def run(self, dt):
-        for sprite_group in self.static_sprites:
-            self.static_sprites[sprite_group].draw(self.display_surface)
-        if self.player:
-            self.player.live(dt, self.static_sprites, self.coins)
-        if self.ghosts:
-            for ghost in self.ghosts:
-                ghost.update(dt)
-        if self.coins:
-            for coin in self.coins:
-                coin.draw(dt)
-        if self.player:
-            img = self.font.render(f"{self.player.collected_coins}/{self.total_coins}", True, (255, 255, 255))
-            self.display_surface.blit(img, (self.display_surface.get_width() - 7 * tile_size, self.display_surface.get_height() - tile_size))
+        for tile_group in self.tiles:
+            for tile in self.tiles[tile_group]:
+                if tile.drawable:
+                    tile.draw(self.display_surface)
+        self.player.live(dt, self.display_surface, self.tiles, self.coins)
+        for ghost in self.ghosts:
+            ghost.live(dt, self.display_surface, self.player)
+        for coin in self.coins:
+            coin.live(dt, self.display_surface)
+
+        # todo HAAL DIT WEG, PUUR OM TE DEMONSTREREN HOE JE DE DEBUG DRAW KAN GEBRUIKEN
+        self.passages[0].neighbours[0].draw_debug_square(self.display_surface)
+        self.passages[0].neighbours[1].draw_debug_square(self.display_surface)
+
+        img = self.font.render(f"{self.player.collected_coins}/{self.total_coins}", True, (255, 255, 255))
+        self.display_surface.blit(img, (self.display_surface.get_width() - 7 * tile_size, self.display_surface.get_height() - tile_size))
 

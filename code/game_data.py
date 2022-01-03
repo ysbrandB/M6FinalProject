@@ -1,28 +1,35 @@
 # Layers are stacked in order of drawing
 level_0 = {
-    'terrain': {
-        'path': '../levels/level_data/0/level0_Level.csv',
-        'type': 'static'
-    },
-    'scenery': {
-        'path': '../levels/level_data/0/level0_Scenery.csv',
-        'type': 'static'
-    },
-    'scenery2': {
-        'path': '../levels/level_data/0/level0_Additional Scenery.csv',
-        'type': 'static'
-    },
-    'player': {
-        'path': '../levels/level_data/0/level0_Mario.csv',
-        'type': 'player'
-    },
-    'ghosts': {
-        'path': '../levels/level_data/0/level0_Pacman.csv',
-        'type': 'ghosts'
-    },
-    'coins': {
-        'path': '../levels/level_data/0/level0_Coins.csv',
-        'type': 'coin'
+    'tiles_sheet_path': '../imgs/terrain/mario_terrain.png',
+    'layers': {
+        'terrain': {
+            'path': '../levels/level_data/0/level0_Level.csv',
+            'type': 'static'
+        },
+        'ghost_passage': {
+            'path': '../levels/level_data/0/level0_GhostPassage.csv',
+            'type': 'passage'
+        },
+        'scenery': {
+            'path': '../levels/level_data/0/level0_Scenery.csv',
+            'type': 'static'
+        },
+        'scenery2': {
+            'path': '../levels/level_data/0/level0_Additional Scenery.csv',
+            'type': 'static'
+        },
+        'player': {
+            'path': '../levels/level_data/0/level0_Mario.csv',
+            'type': 'player'
+        },
+        'ghosts': {
+            'path': '../levels/level_data/0/level0_Pacman.csv',
+            'type': 'ghosts'
+        },
+        'coins': {
+            'path': '../levels/level_data/0/level0_Coins.csv',
+            'type': 'coin'
+        }
     }
 }
 
@@ -49,6 +56,10 @@ player = {
 
 ghosts = {
     'sprite_sheet_path': '../imgs/ghosts/ghost_sprites.png',
+    'animation_idle': {
+        'frames': [0],
+        'fps': 1
+    },
     'animation_right': {
         'frames': [0, 1],
         'fps': 7,
@@ -67,10 +78,10 @@ ghosts = {
     }
 }
 
-coins={
+coins = {
     'sprite_sheet_path': '../imgs/coin/coin.png',
-        'animation_idle': {
-            'frames': [0,1,2,3,4,5,6,7],
-            'fps': 10
-        }
+    'animation_idle': {
+        'frames': [0, 1, 2, 3, 4, 5, 6, 7],
+        'fps': 10
+    }
 }
