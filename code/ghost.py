@@ -1,5 +1,5 @@
 import math
-
+import random
 import pygame
 import bisect
 from tiles import AnimatableTile
@@ -27,6 +27,7 @@ class Ghost(AnimatableTile):
         self.frames = self.frames[sprite_row_start:sprite_row_start + 8]
         self.animation = data['animation_left']
         self.target = None
+        self.path=[]
 
     def live(self, dt, surface, player, passages):
         self.grid_position = pygame.math.Vector2(round(self.position.x / self.size), round(self.position.y / self.size))
@@ -34,6 +35,7 @@ class Ghost(AnimatableTile):
         self.move_to_target(player, passages, surface)
         self.set_animation()
         self.animate(dt)
+        self.draw_path(surface)
         self.draw(surface)
 
     def move_to_target(self, player, passages, surface):
@@ -41,18 +43,16 @@ class Ghost(AnimatableTile):
             match self.id:
                 case 0:
                     self.a_star_search(player, passages, surface)
-                    self.dir = self.target.grid_position - self.grid_position
                 case 1:
                     self.greedy_search(player, passages, surface)
-                    self.dir = self.target.grid_position - self.grid_position
                 case 2:
                     self.depth_search(player, passages, surface)
-                    self.dir = self.target.grid_position - self.grid_position
                 case 3:
                     self.breadth_first(player, passages, surface)
-                    self.dir = self.target.grid_position - self.grid_position
+            if self.target is not None:
+                self.dir = self.target.grid_position - self.grid_position
 
-        if (self.target is not None):
+        else:
             if (math.dist(self.target.get_center(), self.get_center())) < 1:
                 self.set_center(self.target.get_center())
                 self.dir = pygame.math.Vector2(0, 0)
@@ -75,6 +75,7 @@ class Ghost(AnimatableTile):
                 self.animation = self.data['animation_up']
 
     def a_star_search(self, target, passages, surface):
+        self.path=[]
         for passage in passages:
             passage.reset()
 
@@ -106,16 +107,17 @@ class Ghost(AnimatableTile):
                 break
 
         current_node = target_tile.parent
+        self.path.append(current_node)
         while current_node is not None and current_node != my_tile and current_node.distance != 1:
             current_node = current_node.parent
+            self.path.append(current_node)
 
         self.target = current_node
 
-        highlight_path(target_tile, surface, my_tile)
-        # print(f"The number of visited nodes is: {len(visited)}")
+        # highlight_path(target_tile, surface, my_tile)
 
     def greedy_search(self, target, passages, surface):
-
+        self.path = []
         for passage in passages:
             passage.reset()
 
@@ -139,15 +141,17 @@ class Ghost(AnimatableTile):
                 break
 
         current_node = target_tile.parent
+        self.path.append(current_node)
         while current_node is not None and current_node != my_tile and current_node.distance != 1:
             current_node = current_node.parent
+            self.path.append(current_node)
 
         self.target = current_node
 
-        current_node.draw_debug_square(surface, (0, 255, 0))
-        highlight_path(target_tile, surface, my_tile)
+        # highlight_path(target_tile, surface, my_tile)
 
     def depth_search(self, target, passages, surface):
+        self.path = []
         for passage in passages:
             passage.reset()
 
@@ -162,6 +166,7 @@ class Ghost(AnimatableTile):
                 if current_node not in visited:
                     visited.append(current_node)
                     neighbours = current_node.get_neighbours()
+                    random.shuffle(neighbours)
                     for next_node in neighbours:
                         if next_node not in visited:
                             next_node.set_parent(current_node)
@@ -170,14 +175,17 @@ class Ghost(AnimatableTile):
                 break
 
         current_node = target_tile.parent
+        self.path.append(current_node)
         while current_node is not None and current_node != my_tile and current_node.distance != 1:
             current_node = current_node.parent
+            self.path.append(current_node)
 
         self.target = current_node
 
-        highlight_path(target_tile, surface, my_tile)
+        # highlight_path(target_tile, surface, my_tile)
 
     def breadth_first(self, target, passages, surface):
+        self.path = []
         for passage in passages:
             passage.reset()
 
@@ -201,9 +209,16 @@ class Ghost(AnimatableTile):
                 break
 
         current_node = target_tile.parent
+        self.path.append(current_node)
         while current_node is not None and current_node != my_tile and current_node.distance != 1:
             current_node = current_node.parent
+            self.path.append(current_node)
 
         self.target = current_node
 
-        highlight_path(target_tile, surface, my_tile)
+        # highlight_path(target_tile, surface, my_tile)
+    def draw_path(self, surface):
+        for index, tile in enumerate(self.path):
+            if tile:
+                tile.draw_debug_square(surface, (255/(self.id+1),255/(self.id+1),255/(self.id+1)), len(self.path)/(len(self.path)-index+1)*10)
+

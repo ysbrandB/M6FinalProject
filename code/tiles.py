@@ -14,6 +14,10 @@ class Tile:
     def __eq__(self, other):
         return self.grid_position == other.grid_position
 
+    def __repr__(self):
+        return f"{self.position, self.grid_position}"
+
+
     def find_neighbours(self, others):
         for other in others:
             if other.grid_position.distance_to(self.grid_position) == 1:
@@ -111,8 +115,8 @@ class PassageTile(Tile):
         return x_distance + y_distance
 
     # even though this method exists, the passage tile is still flagged as non-drawable!
-    def draw_debug_square(self, surface, color):
+    def draw_debug_square(self, surface, color, alpha):
         square = pygame.Surface((self.size, self.size))
         square.fill(color)
-        square.set_alpha(50)
+        square.set_alpha(alpha)
         surface.blit(square, self.position)
