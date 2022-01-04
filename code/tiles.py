@@ -80,13 +80,39 @@ class PassageTile(Tile):
         self.parent = None
         self.score = None
         self.distance = None
+
+    def __lt__(self, other):
+        return (self.score is not None) and (other.score is None or self.score < other.score)
+
     def reset(self):
         self.parent = None
         self.score = None
         self.distance = None
+
+    def get_neighbours(self):
+        return self.neighbours[:]
+
+    def get_distance(self):
+        return self.distance
+
+    def set_parent(self, parent):
+        self.parent = parent
+        if parent.distance is not None:
+            self.distance = parent.distance + 1
+        else:
+            self.distance = 1
+
+    def set_score(self, score):
+        self.score = score
+
+    def manhattan_distance(self, other):
+        x_distance = abs(self.position.x - other.position.x)
+        y_distance = abs(self.position.y - other.position.y)
+        return x_distance + y_distance
+
     # even though this method exists, the passage tile is still flagged as non-drawable!
-    def draw_debug_square(self, surface):
-        red_square = pygame.Surface((self.size, self.size))
-        red_square.fill((255, 0, 0))
-        red_square.set_alpha(50)
-        surface.blit(red_square, self.position)
+    def draw_debug_square(self, surface, color):
+        square = pygame.Surface((self.size, self.size))
+        square.fill(color)
+        square.set_alpha(50)
+        surface.blit(square, self.position)

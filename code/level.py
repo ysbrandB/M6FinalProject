@@ -82,8 +82,8 @@ class Level:
             coin.live(dt, self.display_surface)
 
         # todo HAAL DIT WEG, PUUR OM TE DEMONSTREREN HOE JE DE DEBUG DRAW KAN GEBRUIKEN
-        self.passages[0].neighbours[0].draw_debug_square(self.display_surface)
-        self.passages[0].neighbours[1].draw_debug_square(self.display_surface)
+        # self.passages[0].neighbours[0].draw_debug_square(self.display_surface )
+        # self.passages[0].neighbours[1].draw_debug_square(self.display_surface)
 
         img = self.font.render(f"{self.player.collected_coins}/{self.total_coins}", True, (255, 255, 255))
         self.display_surface.blit(img, (self.display_surface.get_width() - 7 * tile_size, self.display_surface.get_height() - tile_size))
