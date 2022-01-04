@@ -1,21 +1,21 @@
+import bisect
 import math
 import random
+
 import pygame
-import bisect
+
+from settings import ghost_tiles_to_follow
 from tiles import AnimatableTile
+
+
+def mapFromTo(x, a, b, c, d):
+    return (x - a) / (b - a) * (d - c) + c
 
 
 def find_tile_from_position(position, passages):
     for passage in passages:
         if position == passage.grid_position:
             return passage
-
-
-def highlight_path(target, surface, my_tile):
-    current_node = target.parent
-    while current_node is not None and current_node != my_tile:
-        current_node.draw_debug_square(surface, (255, 0, 0))
-        current_node = current_node.parent
 
 
 class Ghost(AnimatableTile):
@@ -27,7 +27,8 @@ class Ghost(AnimatableTile):
         self.frames = self.frames[sprite_row_start:sprite_row_start + 8]
         self.animation = data['animation_left']
         self.target = None
-        self.path=[]
+        self.path = None
+        self.tiles_followed = 0
 
     def live(self, dt, surface, player, passages):
         self.grid_position = pygame.math.Vector2(round(self.position.x / self.size), round(self.position.y / self.size))
@@ -39,24 +40,39 @@ class Ghost(AnimatableTile):
         self.draw(surface)
 
     def move_to_target(self, player, passages, surface):
-        if self.target is None:
-            match self.id:
-                case 0:
-                    self.a_star_search(player, passages, surface)
-                case 1:
-                    self.greedy_search(player, passages, surface)
-                case 2:
-                    self.depth_search(player, passages, surface)
-                case 3:
-                    self.breadth_first(player, passages, surface)
+        if self.path is None:
+            self.search_path(player, passages, surface)
+
+        elif self.target is None and self.path:
+            if self.tiles_followed < ghost_tiles_to_follow:
+                self.tiles_followed += 1
+                self.target = self.path.pop()
+
+
+            elif self.tiles_followed >= ghost_tiles_to_follow:
+                self.search_path(player, passages, surface)
+                self.tiles_followed = 0
+
             if self.target is not None:
                 self.dir = self.target.grid_position - self.grid_position
 
         else:
-            if (math.dist(self.target.get_center(), self.get_center())) < 1:
-                self.set_center(self.target.get_center())
-                self.dir = pygame.math.Vector2(0, 0)
-                self.target = None
+            if self.target is not None:
+                if (math.dist(self.target.get_center(), self.get_center())) < 1:
+                    self.set_center(self.target.get_center())
+                    self.dir = pygame.math.Vector2(0, 0)
+                    self.target = None
+
+    def search_path(self, player, passages, surface):
+        match self.id:
+            case 0:
+                self.a_star_search(player, passages, surface)
+            case 1:
+                self.greedy_search(player, passages, surface)
+            case 2:
+                self.depth_search(player, passages, surface)
+            case 3:
+                self.a_star_search(player, passages, surface)
 
     def set_center(self, center):
         self.position = pygame.math.Vector2(center.x - self.size / 2, center.y - self.size / 2)
@@ -64,10 +80,10 @@ class Ghost(AnimatableTile):
     def set_animation(self):
         match self.dir.x:
             case 1:
-                self.animation=self.data['animation_right']
+                self.animation = self.data['animation_right']
             case -1:
                 self.animation = self.data['animation_left']
-            
+
         match self.dir.y:
             case 1:
                 self.animation = self.data['animation_down']
@@ -75,7 +91,7 @@ class Ghost(AnimatableTile):
                 self.animation = self.data['animation_up']
 
     def a_star_search(self, target, passages, surface):
-        self.path=[]
+        self.path = []
         for passage in passages:
             passage.reset()
 
@@ -112,8 +128,6 @@ class Ghost(AnimatableTile):
             current_node = current_node.parent
             self.path.append(current_node)
 
-        self.target = current_node
-
         # highlight_path(target_tile, surface, my_tile)
 
     def greedy_search(self, target, passages, surface):
@@ -145,8 +159,6 @@ class Ghost(AnimatableTile):
         while current_node is not None and current_node != my_tile and current_node.distance != 1:
             current_node = current_node.parent
             self.path.append(current_node)
-
-        self.target = current_node
 
         # highlight_path(target_tile, surface, my_tile)
 
@@ -180,45 +192,10 @@ class Ghost(AnimatableTile):
             current_node = current_node.parent
             self.path.append(current_node)
 
-        self.target = current_node
-
-        # highlight_path(target_tile, surface, my_tile)
-
-    def breadth_first(self, target, passages, surface):
-        self.path = []
-        for passage in passages:
-            passage.reset()
-
-        target_tile = find_tile_from_position(target.grid_position, passages)
-        my_tile = find_tile_from_position(self.grid_position, passages)
-        queue = [my_tile]
-        visited = []
-
-        while len(queue) > 0:
-            current_node = queue.pop(0)
-            if current_node != target_tile:
-                if current_node not in visited:
-                    visited.append(current_node)
-                    neighbours = current_node.get_neighbours()
-                    # random.shuffle(neighbours)
-                    for next_node in neighbours:
-                        if next_node not in visited:
-                            next_node.set_parent(current_node)
-                            queue.append(next_node)
-            else:
-                break
-
-        current_node = target_tile.parent
-        self.path.append(current_node)
-        while current_node is not None and current_node != my_tile and current_node.distance != 1:
-            current_node = current_node.parent
-            self.path.append(current_node)
-
-        self.target = current_node
-
-        # highlight_path(target_tile, surface, my_tile)
     def draw_path(self, surface):
         for index, tile in enumerate(self.path):
             if tile:
-                tile.draw_debug_square(surface, (255/(self.id+1),255/(self.id+1),255/(self.id+1)), len(self.path)/(len(self.path)-index+1)*10)
-
+                tile.draw_debug_square(surface, (
+                    mapFromTo(self.id, 0, 4, 0, 255), mapFromTo(self.id, 0, 4, 0, 255),
+                    mapFromTo(self.id, 0, 4, 0, 255)),
+                                       mapFromTo(index, 0, len(self.path), 0, 255))
