@@ -4,6 +4,7 @@ import pygame
 import bisect
 from tiles import AnimatableTile
 
+
 def find_tile_from_position(position, passages):
     for passage in passages:
         if position == passage.grid_position:
@@ -11,7 +12,6 @@ def find_tile_from_position(position, passages):
 
 
 def highlight_path(target, surface, my_tile):
-    # print(f"Path length is: {target.distance}")
     current_node = target.parent
     while current_node is not None and current_node != my_tile:
         current_node.draw_debug_square(surface, (255, 0, 0))
@@ -32,6 +32,7 @@ class Ghost(AnimatableTile):
         self.grid_position = pygame.math.Vector2(round(self.position.x / self.size), round(self.position.y / self.size))
         self.position += (self.dir.elementwise() * 0.1)
         self.move_to_target(player, passages, surface)
+        self.set_animation()
         self.animate(dt)
         self.draw(surface)
 
@@ -59,6 +60,19 @@ class Ghost(AnimatableTile):
 
     def set_center(self, center):
         self.position = pygame.math.Vector2(center.x - self.size / 2, center.y - self.size / 2)
+
+    def set_animation(self):
+        match self.dir.x:
+            case 1:
+                self.animation=self.data['animation_right']
+            case -1:
+                self.animation = self.data['animation_left']
+            
+        match self.dir.y:
+            case 1:
+                self.animation = self.data['animation_down']
+            case -1:
+                self.animation = self.data['animation_up']
 
     def a_star_search(self, target, passages, surface):
         for passage in passages:
@@ -164,7 +178,6 @@ class Ghost(AnimatableTile):
         highlight_path(target_tile, surface, my_tile)
 
     def breadth_first(self, target, passages, surface):
-
         for passage in passages:
             passage.reset()
 
