@@ -26,7 +26,7 @@ intro = pygame.mixer.Sound('../sfx/intro.wav')
 intro.play()
 
 while 1:
-    dt = clock.tick(target_fps) * 0.1
+    dt = min(clock.tick(target_fps) * 0.1, max_delta_time)
     for event in pygame.event.get():
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             pygame.quit()
