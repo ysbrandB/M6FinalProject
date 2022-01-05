@@ -25,3 +25,14 @@ def import_cut_graphics(path):
             new_surface.blit(surface, (0, 0), pygame.Rect(x, y, tile_size, tile_size))
             cut_tiles.append(new_surface)
     return cut_tiles
+
+
+def map_from_to(x, a, b, c, d):
+    mapped = (x - a) / (b - a) * (d - c) + c
+    return mapped
+
+
+def find_tile_from_position(position, passages):
+    for passage in passages:
+        if position == passage.grid_position:
+            return passage

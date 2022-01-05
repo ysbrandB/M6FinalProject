@@ -53,9 +53,10 @@ player = {
     }
 }
 
-
 ghosts = {
     'sprite_sheet_path': '../imgs/ghosts/ghost_sprites.png',
+    'seconds_following': 5,
+    'seconds_spreading': 7,
     'animation_idle': {
         'frames': [0],
         'fps': 1
@@ -75,6 +76,25 @@ ghosts = {
     'animation_down': {
         'frames': [6, 7],
         'fps': 7
+    },
+    'animation_scared': {
+        'frames': [8, 9],
+        'fps': 7
+    }, 'animation_scared_white': {
+        'frames': [10, 11],
+        'fps': 7
+    }, 'animation_dead_right': {
+        'frames': [12],
+        'fps': 1
+    }, 'animation_dead_left': {
+        'frames': [13],
+        'fps': 1
+    }, 'animation_dead_up': {
+        'frames': [14],
+        'fps': 1
+    }, 'animation_dead_down': {
+        'frames': [15],
+        'fps': 1
     }
 }
 

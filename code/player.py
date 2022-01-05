@@ -1,7 +1,7 @@
 from tiles import AnimatableTile
 import pygame
-
-
+from helpers import map_from_to
+from settings import horizontal_tile_number, vertical_tile_number
 class Player(AnimatableTile):
     def __init__(self, size, grid_position, frames, data):
         super().__init__(size, grid_position, frames, data)
@@ -35,8 +35,9 @@ class Player(AnimatableTile):
 
         self.jump_snd = pygame.mixer.Sound('../sfx/jump.wav')
         self.coin_snd = pygame.mixer.Sound('../sfx/coin.wav')
-
-    def live(self, dt, surface, tiles, coins):
+        self.ghost_snd = pygame.mixer.Sound('../sfx/ghost.wav')
+        self.ghost_snd.play(-1)
+    def live(self, dt, surface, tiles, coins, ghosts):
         self.collect_coins(coins)
         self.horizontal_movement(dt)
         self.vertical_movement(dt)
@@ -46,6 +47,7 @@ class Player(AnimatableTile):
         self.set_correct_animation()
         self.animate(dt)
         self.draw(surface)
+        self.detect_ghosts(ghosts)
 
     def horizontal_movement(self, dt):
         self.acceleration.x = 0
@@ -147,3 +149,17 @@ class Player(AnimatableTile):
                 self.collected_coins += 1
                 coins.remove(coin)
                 self.coin_snd.play()
+
+    def detect_ghosts(self, ghosts):
+        nearest_ghost = ghosts[0]
+        for ghost in ghosts:
+            if ghost.manhattan_dist_to_player < nearest_ghost.manhattan_dist_to_player:
+                nearest_ghost = ghost
+
+            if nearest_ghost.manhattan_dist_to_player < 2:
+                if ghost.state == ghost.SCARED or ghost.state == ghost.DEAD:
+                    ghost.die()
+
+        volume = 0.5-nearest_ghost.manhattan_dist_to_player/((horizontal_tile_number+vertical_tile_number)/2)
+        self.ghost_snd.set_volume(volume)
+
