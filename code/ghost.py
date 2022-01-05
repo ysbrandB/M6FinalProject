@@ -32,7 +32,7 @@ class Ghost(AnimatableTile):
 
     def live(self, dt, surface, player, passages):
         self.grid_position = pygame.math.Vector2(round(self.position.x / self.size), round(self.position.y / self.size))
-        self.position += (self.dir.elementwise() * 0.1)
+        self.position += (self.dir.elementwise() * dt * 0.5)
         self.move_to_target(player, passages, surface)
         self.set_animation()
         self.animate(dt)
@@ -47,7 +47,6 @@ class Ghost(AnimatableTile):
             if self.tiles_followed < ghost_tiles_to_follow:
                 self.tiles_followed += 1
                 self.target = self.path.pop()
-
 
             elif self.tiles_followed >= ghost_tiles_to_follow:
                 self.search_path(player, passages, surface)
@@ -178,7 +177,7 @@ class Ghost(AnimatableTile):
                 if current_node not in visited:
                     visited.append(current_node)
                     neighbours = current_node.get_neighbours()
-                    random.shuffle(neighbours)
+                    # random.shuffle(neighbours)
                     for next_node in neighbours:
                         if next_node not in visited:
                             next_node.set_parent(current_node)
