@@ -16,7 +16,9 @@ class Level:
         self.tiles['ghosts'] = []
         self.tiles['coins'] = []
         self.font = pygame.font.SysFont(None, 24)
-
+        self.ghost_timer = 0
+        self.ghost_chase = True
+        self.ghost_scared = False
         layers = level_data['layers']
         for layer in layers:
             layer_dict = layers[layer]
@@ -76,8 +78,21 @@ class Level:
                 if tile.drawable and tile.static:
                     tile.draw(self.display_surface)
         self.player.live(dt, self.display_surface, self.tiles, self.coins, self.ghosts)
+
+        if self.ghost_timer <= 0:
+            if self.ghost_chase:
+                self.ghost_timer = ghosts_data['seconds_spreading']
+                self.ghost_chase = False
+            else:
+                self.ghost_timer = ghosts_data['seconds_following']
+                self.ghost_chase = True
+        else:
+            self.ghost_timer -= dt / 100
+        print(self.ghost_chase)
+
         for ghost in self.ghosts:
-            ghost.live(dt, self.display_surface, self.player, self.passages, self.ghosts)
+            ghost.live(dt, self.display_surface, self.player, self.passages, self.ghosts, self.ghost_chase, self.ghost_scared)
+
         for coin in self.coins:
             coin.live(dt, self.display_surface)
 

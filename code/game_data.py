@@ -55,8 +55,8 @@ player = {
 
 ghosts = {
     'sprite_sheet_path': '../imgs/ghosts/ghost_sprites.png',
-    'seconds_following': 8,
-    'seconds_spreading': 10,
+    'seconds_following': 12,
+    'seconds_spreading': 8,
     'animation_idle': {
         'frames': [0],
         'fps': 1

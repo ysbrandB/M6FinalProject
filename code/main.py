@@ -10,7 +10,7 @@ pygame.init()
 game_screen_ratio = game_screen_width / game_screen_height
 infoObject = pygame.display.Info()
 
-screen = pygame.display.set_mode((1.5*432, 1.5*480))
+screen = pygame.display.set_mode((1.5*432, 1.5*480), pygame.RESIZABLE)
 game_screen = pygame.Surface((game_screen_width, game_screen_height))
 clock = pygame.time.Clock()
 

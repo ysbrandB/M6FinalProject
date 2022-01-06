@@ -2,6 +2,8 @@ from tiles import AnimatableTile
 import pygame
 from helpers import map_from_to
 from settings import horizontal_tile_number, vertical_tile_number
+
+
 class Player(AnimatableTile):
     def __init__(self, size, grid_position, frames, data):
         super().__init__(size, grid_position, frames, data)
@@ -37,6 +39,7 @@ class Player(AnimatableTile):
         self.coin_snd = pygame.mixer.Sound('../sfx/coin.wav')
         self.ghost_snd = pygame.mixer.Sound('../sfx/ghost.wav')
         self.ghost_snd.play(-1)
+
     def live(self, dt, surface, tiles, coins, ghosts):
         self.collect_coins(coins)
         self.horizontal_movement(dt)
@@ -160,10 +163,9 @@ class Player(AnimatableTile):
                 if ghost.state == ghost.SCARED or ghost.state == ghost.DEAD:
                     ghost.die()
 
-        volume = 0.5-nearest_ghost.manhattan_dist_to_player/((horizontal_tile_number+vertical_tile_number)/2)
+        volume = 0.5 - nearest_ghost.manhattan_dist_to_player / ((horizontal_tile_number + vertical_tile_number) / 2)
         self.ghost_snd.set_volume(volume)
 
     def get_facing_direction(self):
         vector = pygame.math.Vector2(1 if self.right else -1, 0)
         return vector
-
