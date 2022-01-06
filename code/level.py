@@ -73,6 +73,7 @@ class Level:
         return images
 
     def run(self, dt):
+        self.display_surface.fill(pygame.Color("#9494FF"))
         for tile_group in self.tiles:
             for tile in self.tiles[tile_group]:
                 if tile.drawable and tile.static:
@@ -88,7 +89,6 @@ class Level:
                 self.ghost_chase = True
         else:
             self.ghost_timer -= dt / 100
-        print(self.ghost_chase)
 
         for ghost in self.ghosts:
             ghost.live(dt, self.display_surface, self.player, self.passages, self.ghosts, self.ghost_chase, self.ghost_scared)

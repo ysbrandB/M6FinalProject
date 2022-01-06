@@ -7,10 +7,13 @@ from tiles import AnimatableTile
 from random import randrange
 from helpers import map_from_to, find_tile_from_position, find_nearest_passage_to_vector
 
+# a class dedicated to showing, updating and pathfinding the ghosts of pacman
 
 class Ghost(AnimatableTile):
     def __init__(self, size, grid_position, frames, data, ghost_id):
+        # initialize the super class animatable tile
         super().__init__(size, grid_position, frames, data)
+        # set all necessary variables
         self.dir = pygame.math.Vector2(0, 0)
         self.id = ghost_id
         sprite_row_start = ghost_id * 8
@@ -46,6 +49,7 @@ class Ghost(AnimatableTile):
         self.draw(surface)
 
     def set_state(self, ghost_follow, ghost_scared):
+        # set the state this ghost is in, following or spreading decided by level, the rest by the ghost itself
         if self.state == self.DEAD:
             if self.origin.distance_to(self.grid_position) < 2:
                 self.state = self.FOLLOWING
@@ -58,6 +62,7 @@ class Ghost(AnimatableTile):
                 self.state = self.SPREADING
 
     def search_path(self, player, passages, ghosts):
+        # decide the target based on the state of the ghost, and search the path to it.
         if self.state == self.DEAD:
             target = find_nearest_passage_to_vector(self.origin, passages)
             self.a_star_search(target, passages)
@@ -70,9 +75,11 @@ class Ghost(AnimatableTile):
             match self.id:
                 case 0:
                     # blinky
+                    # pathfinds directly to the player
                     self.a_star_search(target, passages)
                 case 1:
                     # pinky
+                    # pathfinds 4 blocks 'in front' of the player
                     target = find_nearest_passage_to_vector(
                         player.position + (player.get_facing_direction() * 8 * tile_size), passages)
 
@@ -82,12 +89,14 @@ class Ghost(AnimatableTile):
                     self.greedy_search(target, passages)
                 case 2:
                     # inky
-                    # two tiles in front, then subtract blinkys pos and mult by 2, add to blinkys pos
+                    # pathfinds two tiles in front, then subtract blinkys position and multiplies by 2,
+                    # the adds that to blinkys position, 'sandwiching' the player
                     target = find_nearest_passage_to_vector(
                         ((player.position + player.get_facing_direction() * 2 * tile_size) - ghosts[0].position) * 2 +
                         ghosts[0].position, passages)
                     self.a_star_search(target, passages)
                 case 3:
+                    # pathfinds untill it is eight tiles from the player, then scatters again
                     if self.position.distance_to(player.position) > 8 * tile_size:
                         self.greedy_search(target, passages)
                     else:
@@ -95,10 +104,13 @@ class Ghost(AnimatableTile):
                         self.greedy_search(target, passages)
 
     def move_to_target(self, player, passages, ghosts):
+        # follow the calculated path for at least an x number of tiles,
+        # also makes sure the path is only calculated when the tiles are followed or the path is None(speed improvement)
         if self.path is None or self.tiles_followed >= ghost_tiles_to_follow:
             self.search_path(player, passages, ghosts)
             self.tiles_followed = 0
 
+        # get the next node in the path and set direction to the nearest node
         elif self.target is None and len(self.path) > 0:
             self.tiles_followed += 1
             self.target = self.path.pop()
@@ -106,6 +118,9 @@ class Ghost(AnimatableTile):
                 if self.target.grid_position and self.grid_position:
                     self.dir = self.target.grid_position - self.grid_position
 
+        # when the ghost is moving to its target, make sure it does it in a grid-like fashion and make it stop at the
+        # center of the next tile, to decide if the next node of the path needs to be followed or if the path needs to
+        # be recalculated
         elif self.target is not None:
             if (math.dist(self.target.get_center(), self.get_center())) < 1:
                 self.tiles_followed += 1
@@ -116,9 +131,11 @@ class Ghost(AnimatableTile):
         elif len(self.path) <= 0:
             self.search_path(player, passages, ghosts)
 
+    # set the center of the ghost to a vector
     def set_center(self, center):
         self.position = pygame.math.Vector2(center.x - self.size / 2, center.y - self.size / 2)
 
+    # determine the animation based upon the state the ghost is in
     def set_animation(self):
         if self.state is self.SCARED:
             if self.id % 2 == 0:
@@ -126,30 +143,19 @@ class Ghost(AnimatableTile):
             else:
                 self.animation = self.data['animation_scared_white']
 
-        elif self.state == self.DEAD:
-            match self.dir.x:
-                case 1:
-                    self.animation = self.data['animation_dead_left']
-                case -1:
-                    self.animation = self.data['animation_dead_right']
-
-            match self.dir.y:
-                case 1:
-                    self.animation = self.data['animation_dead_up']
-                case -1:
-                    self.animation = self.data['animation_dead_down']
         else:
+            # determine the animation based upon direction and if the ghost is dead
             match self.dir.x:
-                case 1:
-                    self.animation = self.data['animation_right']
                 case -1:
-                    self.animation = self.data['animation_left']
+                    self.animation = self.data[f'animation{"_dead" if self.state == self.DEAD else ""}_left']
+                case 1:
+                    self.animation = self.data[f'animation{"_dead" if self.state == self.DEAD else ""}_right']
 
             match self.dir.y:
-                case 1:
-                    self.animation = self.data['animation_down']
                 case -1:
-                    self.animation = self.data['animation_up']
+                    self.animation = self.data[f'animation{"_dead" if self.state == self.DEAD else ""}_up']
+                case 1:
+                    self.animation = self.data[f'animation{"_dead" if self.state == self.DEAD else ""}_down']
 
     def a_star_search(self, target, passages):
         self.path = []
@@ -222,6 +228,7 @@ class Ghost(AnimatableTile):
         if len(self.path) <= 0:
             self.path = None
 
+    # draw the current path of the ghost with a color based upon id and brightness based upon the vicinity to the target
     def draw_path(self, surface):
         if self.path:
             for index, tile in enumerate(self.path):
@@ -237,6 +244,7 @@ class Ghost(AnimatableTile):
     def die(self):
         self.state = self.DEAD
 
+    # find a random passage tile in the corner designated to this ghost
     def find_scatter_position(self, passages):
         x = (randrange(0, math.floor(horizontal_tile_number / 2 * tile_size))) if self.id % 2 == 0 else (
             randrange(math.floor(horizontal_tile_number / 2 * tile_size),
