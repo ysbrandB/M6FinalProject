@@ -1,3 +1,4 @@
+import math
 from csv import reader
 from settings import tile_size
 import pygame
@@ -36,3 +37,13 @@ def find_tile_from_position(position, passages):
     for passage in passages:
         if position == passage.grid_position:
             return passage
+
+
+def find_nearest_passage_to_vector(target_position, passages):
+    nearest_passage = passages[0]
+    nearest_distance = float('inf')
+    for passage in passages:
+        if target_position.distance_to(passage.position) < nearest_distance:
+            nearest_passage = passage
+            nearest_distance = target_position.distance_to(passage.position)
+    return nearest_passage

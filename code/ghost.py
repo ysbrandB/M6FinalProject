@@ -2,10 +2,10 @@ import bisect
 import math
 import pygame
 
-from settings import ghost_tiles_to_follow
+from settings import ghost_tiles_to_follow, tile_size, vertical_tile_number, horizontal_tile_number
 from tiles import AnimatableTile
-import random
-from helpers import map_from_to, find_tile_from_position
+from random import randrange
+from helpers import map_from_to, find_tile_from_position, find_nearest_passage_to_vector
 
 
 class Ghost(AnimatableTile):
@@ -33,13 +33,12 @@ class Ghost(AnimatableTile):
         self.manhattan_dist_to_player = 0
         self.sound = pygame.mixer.Sound('../sfx/coin.wav')
 
-    def live(self, dt, surface, player, passages):
+    def live(self, dt, surface, player, passages, ghosts):
         self.position += (self.dir.elementwise() * dt * 0.5)
         self.grid_position = pygame.math.Vector2(math.floor(self.position.x / self.size),
                                                  math.floor(self.position.y / self.size))
-        self.manhattan_dist_to_player = int(
-            abs(self.grid_position.x - player.grid_position.x) + abs(self.grid_position.y - player.grid_position.y))
-        self.move_to_target(player, passages)
+        self.manhattan_dist_to_player = abs(self.grid_position.x - player.grid_position.x) + abs(self.grid_position.y - player.grid_position.y)
+        self.move_to_target(player, passages, ghosts)
         self.set_animation()
         self.set_state(dt)
         self.animate(dt)
@@ -54,31 +53,46 @@ class Ghost(AnimatableTile):
                     self.state = self.SPREADING
                     self.state_timer = self.data['seconds_spreading']
                 case self.SPREADING:
-                    self.state = self.SCARED
+                    self.state = self.FOLLOWING
                     self.state_timer = self.data['seconds_following']
                 case self.DEAD:
                     if self.grid_position == self.origin:
                         self.state = self.FOLLOWING
                         self.state_timer = self.data['seconds_following']
 
-    def search_path(self, player, passages):
+    def search_path(self, player, passages, ghosts):
         if self.state == self.DEAD:
-            target = find_tile_from_position(self.origin, passages)
+            target = find_nearest_passage_to_vector(self.origin, passages)
         elif self.state == self.SPREADING:
-            quarterly_split = math.floor(len(passages) / 4)
-            quarter = passages[quarterly_split * self.id:quarterly_split * (self.id + 1)]
-            target = random.choice(quarter)
+            target = self.find_scatter_position(passages)
+            self.a_star_search(player, passages)
         else:
             target = player
 
-        if self.id % 2 == 0:
-            self.a_star_search(target, passages)
-        else:
-            self.greedy_search(target, passages)
+        match self.id:
+            case 0:
+                # blinky
+                self.a_star_search(target, passages)
+            case 1:
+                # pinky
+                target = find_nearest_passage_to_vector(
+                    player.position + (player.get_facing_direction() * 8 * tile_size), passages)
+                self.greedy_search(target, passages)
+            case 2:
+                # inky
+                # two tiles in front, then subtract blinkys pos and mult by 2, add to blinkys pos
+                target = find_nearest_passage_to_vector(((player.position+ player.get_facing_direction() * 2 * tile_size)-ghosts[0].position)*2+ghosts[0].position, passages)
+                self.a_star_search(target, passages)
+            case 3:
+                if self.position.distance_to(player.position) > 8*tile_size:
+                    self.greedy_search(target, passages)
+                else:
+                    target = self.find_scatter_position(passages)
+                    self.greedy_search(target, passages)
 
-    def move_to_target(self, player, passages):
+    def move_to_target(self, player, passages, ghosts):
         if self.path is None or self.tiles_followed >= ghost_tiles_to_follow:
-            self.search_path(player, passages)
+            self.search_path(player, passages, ghosts)
             self.tiles_followed = 0
 
         elif self.target is None and len(self.path) > 0:
@@ -96,7 +110,7 @@ class Ghost(AnimatableTile):
                 self.target = None
 
         elif len(self.path) <= 0:
-            self.search_path(player, passages)
+            self.search_path(player, passages, ghosts)
 
     def set_center(self, center):
         self.position = pygame.math.Vector2(center.x - self.size / 2, center.y - self.size / 2)
@@ -171,8 +185,8 @@ class Ghost(AnimatableTile):
             current_node = current_node.parent
             self.path.append(current_node)
 
-        if len(self.path) <= 2:
-            self.path = None
+        # if len(self.path) <= 2:
+        #     self.path = None
 
     def greedy_search(self, target, passages):
         self.path = []
@@ -244,11 +258,22 @@ class Ghost(AnimatableTile):
         if self.path:
             for index, tile in enumerate(self.path):
                 if tile:
-                    tile.draw_debug_square(surface, (
-                        map_from_to(self.id, 0, 4, 0, 255), map_from_to(self.id, 0, 4, 255, 0),
-                        map_from_to(self.id, 0, 4, 0, 255)),
-                                           map_from_to(index, 0, len(self.path), 0, 255))
+                    if index == 0:
+                        tile.draw_debug_square(surface, (255, 0, 0), 255)
+                    else:
+                        tile.draw_debug_square(surface, (
+                            map_from_to(self.id, 0, 4, 0, 255), map_from_to(self.id, 0, 4, 255, 0),
+                            map_from_to(self.id, 0, 4, 0, 255)),
+                                               map_from_to(index, 0, len(self.path), 0, 255))
 
     def die(self):
         self.state = self.DEAD
         self.state_timer = float('inf')
+
+    def find_scatter_position(self, passages):
+        x = (randrange(0, math.floor(horizontal_tile_number / 2 * tile_size))) if self.id % 2 == 0 else (
+            randrange(math.floor(horizontal_tile_number / 2 * tile_size),
+                      horizontal_tile_number * tile_size))
+        y = (randrange(0, math.floor(vertical_tile_number / 2 * tile_size))) if self.id < 2 else (
+            randrange(math.floor(vertical_tile_number / 2 * tile_size), vertical_tile_number * tile_size))
+        return find_nearest_passage_to_vector(pygame.math.Vector2(x, y), passages)

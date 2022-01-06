@@ -77,7 +77,7 @@ class Level:
                     tile.draw(self.display_surface)
         self.player.live(dt, self.display_surface, self.tiles, self.coins, self.ghosts)
         for ghost in self.ghosts:
-            ghost.live(dt, self.display_surface, self.player, self.passages)
+            ghost.live(dt, self.display_surface, self.player, self.passages, self.ghosts)
         for coin in self.coins:
             coin.live(dt, self.display_surface)
 

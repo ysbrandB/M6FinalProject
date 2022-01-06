@@ -163,3 +163,7 @@ class Player(AnimatableTile):
         volume = 0.5-nearest_ghost.manhattan_dist_to_player/((horizontal_tile_number+vertical_tile_number)/2)
         self.ghost_snd.set_volume(volume)
 
+    def get_facing_direction(self):
+        vector = pygame.math.Vector2(1 if self.right else -1, 0)
+        return vector
+
