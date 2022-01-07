@@ -3,6 +3,11 @@ from helpers import *
 from settings import tile_size
 from player import Player
 from ghost import Ghost
+from ghosts.blinky import Blinky
+from ghosts.pinky import Pinky
+from ghosts.inky import Inky
+from ghosts.blinky import Blinky
+from ghosts.clyde import Clyde
 from coin import Coin
 from game_data import player as player_data, ghosts as ghosts_data, coins as coins_data
 
@@ -55,7 +60,15 @@ class Level:
                 return Player(tile_size, position, frames, player_data)
             case 'ghosts':
                 frames = self.images['ghosts']
-                return Ghost(tile_size, position, frames, ghosts_data, tile_num)
+                match(tile_num % 4):
+                    case 0:
+                        return Blinky(tile_size, position, frames, ghosts_data, tile_num)
+                    case 1:
+                        return Pinky(tile_size, position, frames, ghosts_data, tile_num)
+                    case 2:
+                        return Inky(tile_size, position, frames, ghosts_data, tile_num)
+                    case 3:
+                        return Clyde(tile_size, position, frames, ghosts_data, tile_num)
             case 'coin':
                 frames = self.images['coins']
                 return Coin(tile_size / 2, position, frames, coins_data)

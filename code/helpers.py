@@ -2,6 +2,7 @@ import math
 from csv import reader
 from settings import tile_size
 import pygame
+import bisect
 
 
 def import_csv_layout(path):
@@ -47,3 +48,78 @@ def find_nearest_passage_to_vector(target_position, passages):
             nearest_passage = passage
             nearest_distance = target_position.distance_to(passage.position)
     return nearest_passage
+
+
+def a_star_search(target, passages, grid_position):
+    path = []
+    for passage in passages:
+        passage.reset()
+
+    target_tile = find_tile_from_position(target.grid_position, passages)
+    my_tile = find_tile_from_position(grid_position, passages)
+    queue = [my_tile]
+    visited = []
+
+    while len(queue) > 0:
+        current_node = queue.pop(0)
+        if current_node != target_tile:
+            if current_node not in visited:
+                visited.append(current_node)
+                neighbours = current_node.get_neighbours()
+                for next_node in neighbours:
+                    if next_node not in visited and next_node:
+                        old_distance = (next_node.get_distance() if next_node.get_distance() else 0)
+                        next_node.set_parent(current_node)
+                        new_distance = (next_node.get_distance() if next_node.get_distance() else 0)
+                        new_score = new_distance + next_node.manhattan_distance(target_tile)
+                        if next_node not in queue:
+                            next_node.set_score(new_score)
+                            bisect.insort(queue, next_node)
+                        elif old_distance < new_distance:
+                            next_node.set_score(new_score)
+                            temp = queue.pop(queue.index(next_node))
+                            bisect.insort_left(queue, temp)
+        else:
+            break
+
+    current_node = target_tile.parent
+    path.append(current_node)
+    while current_node is not None and current_node != my_tile and current_node.distance != 1:
+        current_node = current_node.parent
+        path.append(current_node)
+    return path
+
+def greedy_search(target, passages, grid_position):
+    path = []
+    for passage in passages:
+        passage.reset()
+
+    target_tile = find_tile_from_position(target.grid_position, passages)
+    my_tile = find_tile_from_position( grid_position, passages)
+    queue = [my_tile]
+    visited = []
+
+    while len(queue) > 0:
+        current_node = queue.pop(0)
+        if current_node != target_tile:
+            if current_node not in visited:
+                visited.append(current_node)
+                neighbours = current_node.get_neighbours()
+                for next_node in neighbours:
+                    if next_node not in visited:
+                        next_node.set_parent(current_node)
+                        next_node.set_score(next_node.manhattan_distance(target_tile))
+                        bisect.insort(queue, next_node)
+        else:
+            break
+
+    current_node = target_tile.parent
+    path.append(current_node)
+    while current_node is not None and current_node != my_tile and current_node.distance != 1:
+        current_node = current_node.parent
+        path.append(current_node)
+
+    if len(path) <= 0:
+        path = None
+
+    return path
