@@ -113,8 +113,8 @@ coins = {
 question_block = {
     'sprite_sheet_path': '../imgs/question_block/question_block.png',
     'animation_idle': {
-        'frames': [0, 1, 2],
-        'fps': 2
+        'frames': [0, 0, 0, 1, 2],
+        'fps': 4
     },
     'animation_hit': {
         'frames': [2, 3],
