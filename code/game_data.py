@@ -29,6 +29,10 @@ level_0 = {
         'coins': {
             'path': '../levels/level_data/0/level0_Coins.csv',
             'type': 'coin'
+        },
+        'question_blocks': {
+            'path': '../levels/level_data/0/level0_Question_blocks.csv',
+            'type': 'question_block'
         }
     }
 }
@@ -105,3 +109,17 @@ coins = {
         'fps': 10
     }
 }
+
+question_block = {
+    'sprite_sheet_path': '../imgs/question_block/question_block.png',
+    'animation_idle': {
+        'frames': [0, 1, 2],
+        'fps': 2
+    },
+    'animation_hit': {
+        'frames': [2, 3],
+        'fps': 2
+    }
+}
+
+

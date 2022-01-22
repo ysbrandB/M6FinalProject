@@ -40,8 +40,7 @@ class Player(AnimatableTile):
         self.ghost_snd = pygame.mixer.Sound('../sfx/ghost.wav')
         self.ghost_snd.play(-1)
 
-    def live(self, dt, surface, tiles, coins, ghosts):
-        self.collect_coins(coins)
+    def live(self, dt, surface, tiles):
         self.horizontal_movement(dt)
         self.vertical_movement(dt)
         self.collision(tiles)
@@ -50,7 +49,7 @@ class Player(AnimatableTile):
         self.set_correct_animation()
         self.animate(dt)
         self.draw(surface)
-        self.detect_ghosts(ghosts)
+        # self.detect_ghosts(ghosts)
 
     def horizontal_movement(self, dt):
         self.acceleration.x = 0
@@ -75,7 +74,7 @@ class Player(AnimatableTile):
     def collision(self, tiles):
         found_floor = False
         for tile_group in tiles:
-            if tile_group == 'terrain':
+            if tile_group == 'terrain' or tile_group == 'question_blocks':
                 for tile in tiles[tile_group]:
                     tile_x = tile.position.x
                     tile_y = tile.position.y
@@ -87,6 +86,9 @@ class Player(AnimatableTile):
                         if tile_y + size - 2 > self.position.y > tile_y:
                             self.position.y = tile_y + size - 2
                             self.velocity.y = 0
+                            if tile_group == 'question_blocks':
+                                tile.player_collided()
+
                         # floor
                         if self.position.y + size > tile_y > self.position.y:
                             self.position.y = tile_y - size
@@ -105,6 +107,13 @@ class Player(AnimatableTile):
                         if self.position.x + size > tile_x > self.position.x - size:
                             self.position.x = tile_x - size
                             self.acceleration.x *= 0.75
+
+            if tile_group == 'coins':
+                for tile in tiles[tile_group]:
+                    if self.get_center().distance_to(tile.get_center()) < 10:
+                        self.collected_coins += 1
+                        tiles[tile_group].remove(tile)
+                        self.coin_snd.play()
         if not found_floor:
             self.grounded = False
 
@@ -145,13 +154,6 @@ class Player(AnimatableTile):
                 self.animation = self.data['animation_running']
             case self.JUMPING:
                 self.animation = self.data['animation_jumping']
-
-    def collect_coins(self, coins):
-        for coin in coins:
-            if self.get_center().distance_to(coin.get_center()) < 10:
-                self.collected_coins += 1
-                coins.remove(coin)
-                self.coin_snd.play()
 
     def detect_ghosts(self, ghosts):
         nearest_ghost = ghosts[0]

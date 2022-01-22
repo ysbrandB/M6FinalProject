@@ -2,14 +2,13 @@ from tiles import *
 from helpers import *
 from settings import tile_size
 from player import Player
-from ghost import Ghost
-from ghosts.blinky import Blinky
 from ghosts.pinky import Pinky
 from ghosts.inky import Inky
 from ghosts.blinky import Blinky
 from ghosts.clyde import Clyde
 from coin import Coin
-from game_data import player as player_data, ghosts as ghosts_data, coins as coins_data
+from questionblock import QuestionBlock
+from game_data import player as player_data, ghosts as ghosts_data, coins as coins_data, question_block as question_block_data
 
 
 class Level:
@@ -20,6 +19,7 @@ class Level:
         self.tiles = dict()
         self.tiles['ghosts'] = []
         self.tiles['coins'] = []
+        self.tiles['question_blocks'] = []
         self.font = pygame.font.SysFont(None, 24)
         self.ghost_timer = 0
         self.ghost_chase = True
@@ -43,6 +43,7 @@ class Level:
         self.player = self.tiles['player'][0]
         self.ghosts = self.tiles['ghosts']
         self.coins = self.tiles['coins']
+        self.question_blocks = self.tiles['question_blocks']
         self.passages = self.tiles['ghost_passage']
 
         for tile in self.passages:
@@ -72,6 +73,10 @@ class Level:
             case 'coin':
                 frames = self.images['coins']
                 return Coin(tile_size / 2, position, frames, coins_data)
+            case 'question_block':
+                frames = self.images['question_blocks']
+                return QuestionBlock(tile_size, position, frames, question_block_data, self.ghost_scared)
+
         return _type
 
     def extract_image_and_flags(self, tile_id):
@@ -83,6 +88,7 @@ class Level:
         images['player'] = import_cut_graphics(player_data['sprite_sheet_path'])
         images['ghosts'] = import_cut_graphics(ghosts_data['sprite_sheet_path'])
         images['coins'] = import_cut_graphics(coins_data['sprite_sheet_path'])
+        images['question_blocks'] = import_cut_graphics(question_block_data['sprite_sheet_path'])
         return images
 
     def run(self, dt):
@@ -91,7 +97,7 @@ class Level:
             for tile in self.tiles[tile_group]:
                 if tile.drawable and tile.static:
                     tile.draw(self.display_surface)
-        self.player.live(dt, self.display_surface, self.tiles, self.coins, self.ghosts)
+        self.player.live(dt, self.display_surface, self.tiles)
 
         if self.ghost_timer <= 0:
             if self.ghost_chase:
@@ -109,6 +115,9 @@ class Level:
         for coin in self.coins:
             coin.live(dt, self.display_surface)
 
-        img = self.font.render(f"{self.player.collected_coins}/{self.total_coins}", True, (255, 255, 255))
-        self.display_surface.blit(img, (self.display_surface.get_width() - 7 * tile_size, self.display_surface.get_height() - tile_size))
+        for question_block in self.question_blocks:
+            question_block.live(dt, self.display_surface)
+
+        txt = self.font.render(f"{self.player.collected_coins}/{self.total_coins}", True, (255, 255, 255))
+        self.display_surface.blit(txt, (self.display_surface.get_width() - 7 * tile_size, self.display_surface.get_height() - tile_size))
 

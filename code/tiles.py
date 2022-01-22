@@ -12,11 +12,11 @@ class Tile:
         self.neighbours = []
 
     def __eq__(self, other):
-        return self.grid_position == other.grid_position
+        if other:
+            return self.grid_position == other.grid_position
 
     def __repr__(self):
         return f"{self.position, self.grid_position}"
-
 
     def find_neighbours(self, others):
         for other in others:
@@ -110,9 +110,10 @@ class PassageTile(Tile):
         self.score = score
 
     def manhattan_distance(self, other):
-        x_distance = abs(self.position.x - other.position.x)
-        y_distance = abs(self.position.y - other.position.y)
-        return x_distance + y_distance
+        if other:
+            x_distance = abs(self.position.x - other.position.x)
+            y_distance = abs(self.position.y - other.position.y)
+            return x_distance + y_distance
 
     # even though this method exists, the passage tile is still flagged as non-drawable!
     def draw_debug_square(self, surface, color, alpha):
