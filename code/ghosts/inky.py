@@ -11,7 +11,7 @@ import math
 import pygame
 
 
-def find_scatter_position(passages):
+def find_scatter_position(passages, scared):
     # scatters to the bottom_right corner
     x = (randrange(0, math.floor(horizontal_tile_number / 2 * tile_size)))
     y = (randrange(math.floor(vertical_tile_number / 2 * tile_size), 2 * math.floor(vertical_tile_number / 2 * tile_size)))
@@ -30,6 +30,9 @@ class Inky(Ghost):
             self.path = a_star_search(target, passages, self.grid_position)
         elif self.state == self.SPREADING:
             target = find_scatter_position(passages)
+            self.path = a_star_search(target, passages, self.grid_position)
+        elif self.state == self.SCARED:
+            target = find_nearest_passage_to_vector(self.position+(self.position-player.position), passages)
             self.path = a_star_search(target, passages, self.grid_position)
         else:
             # inky

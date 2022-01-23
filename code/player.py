@@ -43,7 +43,8 @@ class Player(AnimatableTile):
         self.horizontal_movement(dt)
         self.vertical_movement(dt)
         self.collision(tiles)
-        self.grid_position = pygame.math.Vector2(round(self.position.x / self.size[0]), round(self.position.y / self.size[1]))
+        self.grid_position = pygame.math.Vector2(round(self.position.x / self.size[0]),
+                                                 round(self.position.y / self.size[1]))
         self.update_animation_state()
         self.set_correct_animation()
         self.animate(dt)
@@ -106,6 +107,10 @@ class Player(AnimatableTile):
                         if self.position.x + size[0] > tile_x > self.position.x - size[0]:
                             self.position.x = tile_x - size[0]
                             self.acceleration.x *= 0.75
+            if 'pipe_head_pair' in tile_group:
+                for tile in tiles[tile_group]:
+                    if tile.position.x < self.position.x < tile.position.x+tile.size[0] and tile.position.y < self.position.y < tile.position.y+tile.size[1]:
+                        print("collided")
 
             if tile_group == 'coins':
                 for tile in tiles[tile_group]:
@@ -114,11 +119,9 @@ class Player(AnimatableTile):
                         tiles[tile_group].remove(tile)
                         self.coin_snd.play()
 
-            if 'pipe_head_pair' in tile_group:
-                pass
-
-        if self.position.y + size[1] > tile_y > self.position.y:
-            self.position.y = vertical_tile_number*global_tile_size - size[1]
+        # bottom of the screen
+        if self.position.y + size[1] > vertical_tile_number * global_tile_size > self.position.y:
+            self.position.y = vertical_tile_number * global_tile_size - size[1]
             self.velocity.y = 0
             self.grounded = True
             self.jumping = False

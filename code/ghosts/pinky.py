@@ -29,6 +29,9 @@ class Pinky(Ghost):
         elif self.state == self.SPREADING:
             target = find_scatter_position(passages)
             self.path = greedy_search(target, passages, self.grid_position)
+        elif self.state == self.SCARED:
+            target = find_nearest_passage_to_vector(self.position-player.position*horizontal_tile_number*tile_size, passages)
+            self.path = greedy_search(target, passages, self.grid_position)
         else:
             # pinky
             # path-finds 4 blocks 'in front' of the player

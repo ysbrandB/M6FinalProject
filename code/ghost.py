@@ -29,7 +29,7 @@ class Ghost(AnimatableTile):
         self.SPREADING = 1
         self.DEAD = 2
         self.SCARED = 3
-        self.state = self.DEAD
+        self.state = self.SCARED
         self.manhattan_dist_to_player = 0
 
     def live(self, dt, surface, player, passages, ghosts, ghost_follow, ghost_scared):
@@ -125,3 +125,6 @@ class Ghost(AnimatableTile):
 
     def die(self):
         self.state = self.DEAD
+
+    def scare(self):
+        self.state = self.SCARED
