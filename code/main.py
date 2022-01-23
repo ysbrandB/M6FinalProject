@@ -14,7 +14,7 @@ pygame.init()
 # make the screen and save the dimensions of your screen for fullscreen mode and resizing
 game_screen_ratio = game_screen_width / game_screen_height
 infoObject = pygame.display.Info()
-screen = pygame.display.set_mode((1.5 * 432, 1.5 * 480))
+screen = pygame.display.set_mode((1.5 * 432, 1.5 * 480), pygame.RESIZABLE)
 fullscreen = False
 game_screen = pygame.Surface((game_screen_width, game_screen_height))
 
@@ -61,10 +61,13 @@ while 1:
                 case pygame.K_F11:
                     if fullscreen:
                         pygame.display.set_mode((1.5 * 432, 1.5 * 480), pygame.RESIZABLE)
+                        screen = pygame.display.set_mode((1.5 * 432, 1.5 * 480),
+                                                         pygame.RESIZABLE)
                         fullscreen = False
                     else:
                         fullscreen = True
-                        pygame.display.set_mode((infoObject.current_w, infoObject.current_h), pygame.FULLSCREEN)
+                        screen = pygame.display.set_mode((infoObject.current_w, infoObject.current_h), pygame.FULLSCREEN)
+                        # pygame.display.set_mode((infoObject.current_w, infoObject.current_h), pygame.FULLSCREEN)
                     # calculate the offsets our gamescreen needs inside the real screen (seen as black bars)
                     resized_width = screen.get_height() * (game_screen_width / game_screen_height)
                     resized_height = screen.get_height()
@@ -87,6 +90,18 @@ while 1:
                         player.velocity.y *= 0.5
                 case pygame.K_LSHIFT:
                     player.speed_multiplier = player.DEFAULT_SPEED
+
+        elif event.type == pygame.VIDEORESIZE:
+            # calculate the offsets our gamescreen needs inside the real screen (seen as black bars)
+            resized_width = screen.get_height() * (game_screen_width / game_screen_height)
+            resized_height = screen.get_height()
+            resized_y_offset = 0
+            if resized_width > screen.get_width():
+                resized_width = screen.get_width()
+                resized_height = resized_width / game_screen_ratio
+                resized_y_offset = (screen.get_height() - resized_height) / 2
+            resized_x_offset = (screen.get_width() - resized_width) / 2
+
     # update the level
     level.run(dt)
     # resize the game screen and put it onto the screen and update it

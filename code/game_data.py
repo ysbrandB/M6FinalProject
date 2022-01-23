@@ -117,8 +117,8 @@ question_block = {
         'fps': 4
     },
     'animation_hit': {
-        'frames': [2, 3],
-        'fps': 2
+        'frames': [3, 3],
+        'fps': 1
     }
 }
 

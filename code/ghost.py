@@ -3,7 +3,6 @@ import pygame
 
 from settings import ghost_tiles_to_follow, tile_size, vertical_tile_number, horizontal_tile_number
 from tiles import AnimatableTile
-from random import randrange
 from helpers import map_from_to, find_nearest_passage_to_vector
 
 # a class dedicated to showing, updating and pathfinding the ghosts of pacman
@@ -51,9 +50,7 @@ class Ghost(AnimatableTile):
         if self.state == self.DEAD:
             if self.origin.distance_to(self.grid_position) < 2:
                 self.state = self.FOLLOWING
-        elif ghost_scared:
-            self.state = self.SCARED
-        else:
+        elif self.state != self.SCARED:
             if ghost_follow:
                 self.state = self.FOLLOWING
             else:
