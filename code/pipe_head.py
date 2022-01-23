@@ -2,6 +2,7 @@ from tiles import StaticTile
 import pygame
 import copy
 
+
 class PipeHead(StaticTile):
     def __init__(self, size, grid_position, image, flags):
         super().__init__(size, grid_position, image, flags)
@@ -14,7 +15,5 @@ class PipeHead(StaticTile):
         return copy.copy(self.paired_pipe.position)
 
     def draw_debug(self, surface):
-        square = pygame.Surface((self.size[0], self.size[1]))
-        square.fill((0, 255, 0))
-        square.set_alpha(100)
-        surface.blit(square, self.position)
+        square = pygame.Rect(self.position, (self.size[0], self.size[1]))
+        pygame.draw.rect(surface, (255, 0, 0, 100), square)

@@ -118,8 +118,9 @@ class Player(AnimatableTile):
 
             elif 'pipe_head_pair' in tile_group:
                 for tile in tiles[tile_group]:
-                    if tile.position.x < self.position.x < tile.position.x + tile.size[0] and \
-                            tile.position.y < self.position.y < tile.position.y + tile.size[1]:
+                    print(tile.position, self.position)
+                    rect = pygame.Rect(tile.position, tile.size)
+                    if rect.collidepoint(self.position):
                         if self.teleport_cooldown <= 0:
                             self.teleport_cooldown = 500
                             self.position = tile.get_paired_location()
