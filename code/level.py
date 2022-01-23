@@ -22,7 +22,6 @@ class Level:
         self.tiles['ghosts'] = []
         self.tiles['coins'] = []
         self.tiles['question_blocks'] = []
-        self.tiles['pipe_heads'] = []
         self.font = pygame.font.SysFont(None, 24)
         self.ghost_timer = 0
         self.ghost_chase = True
@@ -46,12 +45,21 @@ class Level:
         self.player = self.tiles['player'][0]
         self.ghosts = self.tiles['ghosts']
         self.coins = self.tiles['coins']
-        self.pipe_heads = self.tiles['pipe_heads']
         self.question_blocks = self.tiles['question_blocks']
         self.passages = self.tiles['ghost_passage']
 
         for tile in self.passages:
             tile.find_neighbours(self.passages)
+
+        self.pipes = []
+        for layer in self.tiles:
+            if "pipe_head_pair" in layer:
+                self.pipes.extend(self.tiles[layer])
+                for index, pipe in enumerate(self.tiles[layer]):
+                    if index == 0:
+                        pipe.set_paired_pipe(self.tiles[layer][len(self.tiles[layer]) - 1])
+                    else:
+                        pipe.set_paired_pipe(self.tiles[layer][index - 1])
 
     def create_tile(self, _type, position, tile_id, tile_num):
         match _type:
@@ -76,13 +84,13 @@ class Level:
                         return Clyde((tile_size, tile_size), position, frames, ghosts_data, tile_num)
             case 'coin':
                 frames = self.images['coins']
-                return Coin((tile_size/2, tile_size/2), position, frames, coins_data)
+                return Coin((tile_size / 2, tile_size / 2), position, frames, coins_data)
             case 'question_block':
                 frames = self.images['question_blocks']
                 return QuestionBlock((tile_size, tile_size), position, frames, question_block_data, self.ghost_scared)
             case 'pipe_head':
                 image = self.images['pipe_heads'][0]
-                return PipeHead((tile_size*2, tile_size), position, image, tile_id >> 28)
+                return PipeHead((tile_size * 2, tile_size), position, image, tile_id >> 28)
 
         return _type
 
@@ -127,6 +135,9 @@ class Level:
 
         for question_block in self.question_blocks:
             question_block.live(dt, self.display_surface)
+
+        for pipe in self.pipes:
+            pipe.draw_debug(self.display_surface)
 
         txt = self.font.render(f"{self.player.collected_coins}/{self.total_coins}", True, (255, 255, 255))
         self.display_surface.blit(txt, (

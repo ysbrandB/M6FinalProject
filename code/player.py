@@ -1,7 +1,6 @@
 from tiles import AnimatableTile
 import pygame
-from helpers import map_from_to
-from settings import horizontal_tile_number, vertical_tile_number
+from settings import horizontal_tile_number, vertical_tile_number, tile_size as global_tile_size
 
 
 class Player(AnimatableTile):
@@ -114,6 +113,17 @@ class Player(AnimatableTile):
                         self.collected_coins += 1
                         tiles[tile_group].remove(tile)
                         self.coin_snd.play()
+
+            if 'pipe_head_pair' in tile_group:
+                pass
+
+        if self.position.y + size[1] > tile_y > self.position.y:
+            self.position.y = vertical_tile_number*global_tile_size - size[1]
+            self.velocity.y = 0
+            self.grounded = True
+            self.jumping = False
+            found_floor = True
+
         if not found_floor:
             self.grounded = False
 
