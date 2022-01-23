@@ -1,6 +1,7 @@
 import sys
 import pygame
 import cv2
+import threading
 
 from game_data import level_0
 from level import Level
@@ -44,6 +45,24 @@ ghosts = level.ghosts
 intro = pygame.mixer.Sound('../sfx/intro.wav')
 intro.play()
 
+is_running = True
+
+
+class CamThread(threading.Thread):
+    def __init__(self, thread_id):
+        threading.Thread.__init__(self)
+        self.threadID = thread_id
+        self.tracking_result = None
+
+    def run(self):
+        while is_running:
+            frame = cam.read_frame()
+            self.tracking_result = hand_tracker.track_frame(frame, True)
+
+
+if use_tracking:
+    cam_thread = CamThread(1)
+    cam_thread.start()
 
 def fix_screen_after_resize():
     global screen, resized_width, resized_height, resized_y_offset, resized_x_offset
@@ -68,19 +87,15 @@ def fix_screen_after_resize():
 
 
 def convert_opencv_image_to_pygame(image):
-    return pygame.image.frombuffer(image.tostring(), image.shape[1::-1], "RGB")
+    return pygame.image.frombuffer(image.tobytes(), image.shape[1::-1], "RGB")
 
 
 # our game loop
-while True:
-    if use_tracking:
-        frame = cam.read_frame()
-        tracking_result = hand_tracker.track_frame(frame, True)
+while is_running:
     dt = min(clock.tick(target_fps) * 0.1, max_delta_time)
     for event in pygame.event.get():
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-            pygame.quit()
-            sys.exit()
+            is_running = False
         elif event.type == pygame.KEYDOWN:
             match event.key:
                 # player movement
@@ -133,11 +148,15 @@ while True:
     screen.blit(resized_screen, (resized_x_offset, resized_y_offset))
 
     # draw the tracking result in the black area on the left
-    if use_tracking:
-        tracking_result_rgb = cv2.cvtColor(tracking_result, cv2.COLOR_RGB2BGR)
+    if use_tracking and cam_thread.tracking_result is not None:
+        tracking_result_rgb = cv2.cvtColor(cam_thread.tracking_result, cv2.COLOR_RGB2BGR)
         result_pygame_image = convert_opencv_image_to_pygame(tracking_result_rgb)
         scaled_width = resized_x_offset
         scaled_height = scaled_width / cam.get_aspect_ratio()
         scaled_image = pygame.transform.scale(result_pygame_image, (scaled_width, scaled_height))
         screen.blit(scaled_image, (0, 0))
     pygame.display.update()
+
+cam_thread.join()
+pygame.quit()
+sys.exit()
