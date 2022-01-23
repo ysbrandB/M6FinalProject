@@ -22,8 +22,8 @@ class Ghost(AnimatableTile):
         self.target = None
         self.path = None
         self.tiles_followed = 0
-        self.origin = pygame.math.Vector2(math.floor(self.position.x / self.size[0]),
-                                          math.floor(self.position.y / self.size[1]))
+        self.origin = pygame.math.Vector2(math.floor(self.position.x / self.size),
+                                          math.floor(self.position.y / self.size))
 
         self.FOLLOWING = 0
         self.SPREADING = 1
@@ -35,8 +35,8 @@ class Ghost(AnimatableTile):
 
     def live(self, dt, surface, player, passages, ghosts, ghost_follow):
         self.position += (self.dir.elementwise() * dt * 0.5)
-        self.grid_position = pygame.math.Vector2(math.floor(self.position.x / self.size[0]),
-                                                 math.floor(self.position.y / self.size[1]))
+        self.grid_position = pygame.math.Vector2(math.floor(self.position.x / self.size),
+                                                 math.floor(self.position.y / self.size))
         self.manhattan_dist_to_player = abs(self.grid_position.x - player.grid_position.x) + abs(
             self.grid_position.y - player.grid_position.y)
         self.move_to_target(player, passages, ghosts)
@@ -94,7 +94,7 @@ class Ghost(AnimatableTile):
 
     # set the center of the ghost to a vector
     def set_center(self, center):
-        self.position = pygame.math.Vector2(center.x - self.size[0] / 2, center.y - self.size[1] / 2)
+        self.position = pygame.math.Vector2(center.x - self.size / 2, center.y - self.size / 2)
 
     # determine the animation based upon the state the ghost is in
     def set_animation(self):

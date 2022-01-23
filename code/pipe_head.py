@@ -4,9 +4,10 @@ import copy
 
 
 class PipeHead(StaticTile):
-    def __init__(self, size, grid_position, image, flags):
+    def __init__(self, size, grid_position, image, flags, tile_id):
         super().__init__(size, grid_position, image, flags)
         self.paired_pipe = None
+        self.tile_id = tile_id
 
     def set_paired_pipe(self, pipe):
         self.paired_pipe = pipe
@@ -15,5 +16,7 @@ class PipeHead(StaticTile):
         return copy.copy(self.paired_pipe.position)
 
     def draw_debug(self, surface):
-        square = pygame.Rect(self.position, (self.size[0], self.size[1]))
-        pygame.draw.rect(surface, (255, 0, 0, 100), square)
+        square = pygame.Surface((self.size, self.size))
+        square.fill((0, 0, 255))
+        square.set_alpha(100)
+        surface.blit(square, self.position)

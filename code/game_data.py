@@ -1,7 +1,6 @@
 # Layers are stacked in order of drawing
 level_0 = {
     'tiles_sheet_path': '../imgs/terrain/mario_terrain.png',
-    'sprite_size': (1, 1),
     'layers': {
         'terrain': {
             'path': '../levels/level_data/0/level0_Level.csv',
@@ -52,7 +51,6 @@ level_0 = {
 
 player = {
     'sprite_sheet_path': '../imgs/player/shroomaddict.png',
-    'sprite_size': (1, 1),
     'animation_idle': {
         'frames': [0],
         'fps': 1,
@@ -73,7 +71,6 @@ player = {
 
 ghosts = {
     'sprite_sheet_path': '../imgs/ghosts/ghost_sprites.png',
-    'sprite_size': (1, 1),
     'seconds_following': 12,
     'seconds_spreading': 8,
     'animation_idle': {
@@ -119,7 +116,6 @@ ghosts = {
 
 coins = {
     'sprite_sheet_path': '../imgs/coin/coin.png',
-    'sprite_size': (1, 1),
     'animation_idle': {
         'frames': [0, 1, 2, 3, 4, 5, 6, 7],
         'fps': 10
@@ -128,7 +124,6 @@ coins = {
 
 question_block = {
     'sprite_sheet_path': '../imgs/question_block/question_block.png',
-    'sprite_size': (1, 1),
     'animation_idle': {
         'frames': [0, 0, 0, 1, 2],
         'fps': 4
@@ -140,8 +135,7 @@ question_block = {
 }
 
 pipe_head = {
-    'sprite_sheet_path': '../imgs/pipe_head/mario_pipes.png',
-    'sprite_size': (2, 1),
+    'sprite_sheet_path': '../imgs/terrain/mario_terrain.png',
     'animation_idle': {
         'frames': [0],
         'fps': 1

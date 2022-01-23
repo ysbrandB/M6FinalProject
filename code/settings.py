@@ -9,4 +9,4 @@ ghost_tiles_to_follow = 10
 window_scale = 1.5
 tracker_width = 100
 webcam_id = 1
-use_tracking = True
+use_tracking = False

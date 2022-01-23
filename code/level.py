@@ -51,46 +51,49 @@ class Level:
         for tile in self.passages:
             tile.find_neighbours(self.passages)
 
+    # put the pipes in the pipe array and pair the pipe_blocks with the pipe_block in the same layer of the same type
         self.pipes = []
         for layer in self.tiles:
             if "pipe_head_pair" in layer:
                 self.pipes.extend(self.tiles[layer])
-                for index, pipe in enumerate(self.tiles[layer]):
-                    if index == 0:
-                        pipe.set_paired_pipe(self.tiles[layer][len(self.tiles[layer]) - 1])
-                    else:
-                        pipe.set_paired_pipe(self.tiles[layer][index - 1])
+                for pipe in self.tiles[layer]:
+                    for possible_pair in self.tiles[layer]:
+                        if possible_pair != pipe:
+                            if possible_pair.tile_id == pipe.tile_id and possible_pair.paired_pipe is None and pipe.paired_pipe is None:
+                                possible_pair.paired_pipe = pipe
+                                pipe.paired_pipe = possible_pair
+                                break
 
     def create_tile(self, _type, position, tile_id, tile_num):
         match _type:
             case 'static':
                 image, flags = self.extract_image_and_flags(tile_id)
-                return StaticTile((tile_size, tile_size), position, image, flags)
+                return StaticTile(tile_size, position, image, flags)
             case 'passage':
-                return PassageTile((tile_size, tile_size), position)
+                return PassageTile(tile_size, position)
             case 'player':
                 frames = self.images['player']
-                return Player((tile_size, tile_size), position, frames, player_data)
+                return Player(tile_size, position, frames, player_data)
             case 'ghosts':
                 frames = self.images['ghosts']
                 match (tile_num % 4):
                     case 0:
-                        return Blinky((tile_size, tile_size), position, frames, ghosts_data, tile_num)
+                        return Blinky(tile_size, position, frames, ghosts_data, tile_num)
                     case 1:
-                        return Pinky((tile_size, tile_size), position, frames, ghosts_data, tile_num)
+                        return Pinky(tile_size, position, frames, ghosts_data, tile_num)
                     case 2:
-                        return Inky((tile_size, tile_size), position, frames, ghosts_data, tile_num)
+                        return Inky(tile_size, position, frames, ghosts_data, tile_num)
                     case 3:
-                        return Clyde((tile_size, tile_size), position, frames, ghosts_data, tile_num)
+                        return Clyde(tile_size, position, frames, ghosts_data, tile_num)
             case 'coin':
                 frames = self.images['coins']
-                return Coin((tile_size / 2, tile_size / 2), position, frames, coins_data)
+                return Coin(tile_size / 2, position, frames, coins_data)
             case 'question_block':
                 frames = self.images['question_blocks']
-                return QuestionBlock((tile_size, tile_size), position, frames, question_block_data, self.ghost_scared)
+                return QuestionBlock(tile_size, position, frames, question_block_data, self.ghost_scared)
             case 'pipe_head':
-                image = self.images['pipe_heads'][0]
-                return PipeHead((tile_size * 2, tile_size), position, image, tile_id >> 28)
+                image, flag = self.extract_image_and_flags(tile_id)
+                return PipeHead(tile_size, position, image, flag, tile_id & 0x0fffffff)
 
         return _type
 
@@ -99,13 +102,12 @@ class Level:
 
     def get_parsed_images(self):
         images = dict()
-        images['level'] = import_cut_graphics(self.level_data['tiles_sheet_path'], self.level_data['sprite_size'])
-        images['player'] = import_cut_graphics(player_data['sprite_sheet_path'], player_data['sprite_size'])
-        images['ghosts'] = import_cut_graphics(ghosts_data['sprite_sheet_path'], ghosts_data['sprite_size'])
-        images['coins'] = import_cut_graphics(coins_data['sprite_sheet_path'], coins_data['sprite_size'])
-        images['question_blocks'] = import_cut_graphics(question_block_data['sprite_sheet_path'],
-                                                        question_block_data['sprite_size'])
-        images['pipe_heads'] = import_cut_graphics(pipe_head_data['sprite_sheet_path'], pipe_head_data['sprite_size'])
+        images['level'] = import_cut_graphics(self.level_data['tiles_sheet_path'])
+        images['player'] = import_cut_graphics(player_data['sprite_sheet_path'])
+        images['ghosts'] = import_cut_graphics(ghosts_data['sprite_sheet_path'])
+        images['coins'] = import_cut_graphics(coins_data['sprite_sheet_path'])
+        images['question_blocks'] = import_cut_graphics(question_block_data['sprite_sheet_path'])
+        images['pipe_heads'] = import_cut_graphics(pipe_head_data['sprite_sheet_path'])
         return images
 
     def run(self, dt):
