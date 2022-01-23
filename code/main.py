@@ -13,8 +13,12 @@ from tracking.hand_tracker import HandTracker
 # A mashup of pacman and mario. The goal is to collect all the coins without being hit by a ghost!
 # Control with WASD or 'SPACE'ASD, fullscreen mode accessible by f11
 
-cam = Camera(webcam_id)
-hand_tracker = HandTracker()
+if use_tracking:
+    cam = Camera(webcam_id)
+    hand_tracker = HandTracker()
+else:
+    cam = None
+    hand_tracker = None
 pygame.init()
 
 # make the screen and save the dimensions of your screen for fullscreen mode and resizing
@@ -69,8 +73,9 @@ def convert_opencv_image_to_pygame(image):
 
 # our game loop
 while True:
-    frame = cam.read_frame()
-    tracking_result = hand_tracker.track_frame(frame, True)
+    if use_tracking:
+        frame = cam.read_frame()
+        tracking_result = hand_tracker.track_frame(frame, True)
     dt = min(clock.tick(target_fps) * 0.1, max_delta_time)
     for event in pygame.event.get():
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
@@ -128,10 +133,11 @@ while True:
     screen.blit(resized_screen, (resized_x_offset, resized_y_offset))
 
     # draw the tracking result in the black area on the left
-    tracking_result_rgb = cv2.cvtColor(tracking_result, cv2.COLOR_RGB2BGR)
-    result_pygame_image = convert_opencv_image_to_pygame(tracking_result_rgb)
-    scaled_width = resized_x_offset
-    scaled_height = scaled_width / cam.get_aspect_ratio()
-    scaled_image = pygame.transform.scale(result_pygame_image, (scaled_width, scaled_height))
-    screen.blit(scaled_image, (0, 0))
+    if use_tracking:
+        tracking_result_rgb = cv2.cvtColor(tracking_result, cv2.COLOR_RGB2BGR)
+        result_pygame_image = convert_opencv_image_to_pygame(tracking_result_rgb)
+        scaled_width = resized_x_offset
+        scaled_height = scaled_width / cam.get_aspect_ratio()
+        scaled_image = pygame.transform.scale(result_pygame_image, (scaled_width, scaled_height))
+        screen.blit(scaled_image, (0, 0))
     pygame.display.update()
