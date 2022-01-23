@@ -80,6 +80,8 @@ class StaticTile(SpriteTile):
         # handle the way when you rotate uneven tiles the csv number is only placed on the bottom
         if size[0] != size[1] and abs(rotation) == 90:
             self.position.y -= global_tile_size
+            tempsize = size
+            self.size = (tempsize[1], tempsize[0])
 
 class PassageTile(Tile):
     def __init__(self, size, grid_position):
