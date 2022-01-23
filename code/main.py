@@ -149,7 +149,7 @@ while is_running:
     screen.blit(resized_screen, (resized_x_offset, resized_y_offset))
 
     # draw the tracking result in the black area on the left
-    if use_tracking and cam_thread.tracking_result:
+    if use_tracking and cam_thread.tracking_result is not None:
         tracking_result_rgb = cv2.cvtColor(cam_thread.tracking_result, cv2.COLOR_RGB2BGR)
         result_pygame_image = convert_opencv_image_to_pygame(tracking_result_rgb)
         scaled_width = resized_x_offset
