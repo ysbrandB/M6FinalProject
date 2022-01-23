@@ -30,4 +30,5 @@ class QuestionBlock(AnimatableTile):
             self.hit = True
             self.inactive = True
             self.velocity.y = -0.3
+            self.frame_index = 0
             self.animation = self.data['animation_hit']
