@@ -6,3 +6,6 @@ game_screen_width = horizontal_tile_number * tile_size
 target_fps = -1
 max_delta_time = 3
 ghost_tiles_to_follow = 10
+window_scale = 1.5
+tracker_width = 200
+webcam_id = 2

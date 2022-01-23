@@ -1,26 +1,34 @@
 import sys
 import pygame
+import cv2
 
 from game_data import level_0
 from level import Level
 from settings import *
 
+from tracking.cam import Camera
+from tracking.hand_tracker import HandTracker
+
 # M4 Final programming project Max Liebe and Ysbrand Burgstede
 # A mashup of pacman and mario. The goal is to collect all the coins without being hit by a ghost!
-# Control with WASD or 'SPACE'ASD, fullscreen mode accessible by f11 
+# Control with WASD or 'SPACE'ASD, fullscreen mode accessible by f11
 
+cam = Camera(webcam_id)
+hand_tracker = HandTracker()
 pygame.init()
 
 # make the screen and save the dimensions of your screen for fullscreen mode and resizing
 game_screen_ratio = game_screen_width / game_screen_height
 infoObject = pygame.display.Info()
-screen = pygame.display.set_mode((1.5 * 432, 1.5 * 480), pygame.RESIZABLE)
+window_width = game_screen_width * window_scale + tracker_width
+window_height = game_screen_height * window_scale
+screen = pygame.display.set_mode((window_width, window_height), pygame.RESIZABLE)
 fullscreen = False
 game_screen = pygame.Surface((game_screen_width, game_screen_height))
 
 resized_width = screen.get_height() * game_screen_ratio
 resized_height = screen.get_height()
-resized_x_offset = (screen.get_width() - resized_width) / 2
+resized_x_offset = tracker_width + (resized_width / game_screen_width)
 resized_y_offset = 0
 
 # initialize the game and all its necessary components
@@ -32,8 +40,37 @@ ghosts = level.ghosts
 intro = pygame.mixer.Sound('../sfx/intro.wav')
 intro.play()
 
-# our gameloop
-while 1:
+
+def fix_screen_after_resize():
+    global screen, resized_width, resized_height, resized_y_offset, resized_x_offset
+
+    # calculate the offsets our game screen needs inside the real screen (seen as black bars)
+    if screen.get_width() < window_width or screen.get_height() < window_height:
+        resized_width = window_height * game_screen_ratio
+        resized_height = window_height
+        resized_y_offset = 0
+        resized_x_offset = tracker_width + (resized_width / game_screen_width)
+        screen = pygame.display.set_mode((window_width, window_height), pygame.RESIZABLE)
+    else:
+        resized_width = screen.get_height() * (game_screen_width / game_screen_height)
+        resized_height = screen.get_height()
+        resized_y_offset = 0
+        if screen.get_width() - tracker_width < resized_width:
+            screen = pygame.display.set_mode((resized_width + tracker_width, resized_height), pygame.RESIZABLE)
+        if screen.get_width() > resized_width + (tracker_width * 2):
+            resized_x_offset = (screen.get_width() - resized_width) / 2
+        else:
+            resized_x_offset = tracker_width + (resized_width / game_screen_width)
+
+
+def convert_opencv_image_to_pygame(image):
+    return pygame.image.frombuffer(image.tostring(), image.shape[1::-1], "RGB")
+
+
+# our game loop
+while True:
+    frame = cam.read_frame()
+    tracking_result = hand_tracker.track_frame(frame, True)
     dt = min(clock.tick(target_fps) * 0.1, max_delta_time)
     for event in pygame.event.get():
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
@@ -60,23 +97,13 @@ while 1:
                 # fullscreen
                 case pygame.K_F11:
                     if fullscreen:
-                        pygame.display.set_mode((1.5 * 432, 1.5 * 480), pygame.RESIZABLE)
-                        screen = pygame.display.set_mode((1.5 * 432, 1.5 * 480),
-                                                         pygame.RESIZABLE)
+                        screen = pygame.display.set_mode((window_width, window_height), pygame.RESIZABLE)
                         fullscreen = False
                     else:
                         fullscreen = True
                         screen = pygame.display.set_mode((infoObject.current_w, infoObject.current_h), pygame.FULLSCREEN)
-                        # pygame.display.set_mode((infoObject.current_w, infoObject.current_h), pygame.FULLSCREEN)
-                    # calculate the offsets our gamescreen needs inside the real screen (seen as black bars)
-                    resized_width = screen.get_height() * (game_screen_width / game_screen_height)
-                    resized_height = screen.get_height()
-                    resized_y_offset = 0
-                    if resized_width > screen.get_width():
-                        resized_width = screen.get_width()
-                        resized_height = resized_width / game_screen_ratio
-                        resized_y_offset = (screen.get_height() - resized_height) / 2
-                    resized_x_offset = (screen.get_width() - resized_width) / 2
+
+                    fix_screen_after_resize()
 
         elif event.type == pygame.KEYUP:
             # more player movement
@@ -92,19 +119,19 @@ while 1:
                     player.speed_multiplier = player.DEFAULT_SPEED
 
         elif event.type == pygame.VIDEORESIZE:
-            # calculate the offsets our gamescreen needs inside the real screen (seen as black bars)
-            resized_width = screen.get_height() * (game_screen_width / game_screen_height)
-            resized_height = screen.get_height()
-            resized_y_offset = 0
-            if resized_width > screen.get_width():
-                resized_width = screen.get_width()
-                resized_height = resized_width / game_screen_ratio
-                resized_y_offset = (screen.get_height() - resized_height) / 2
-            resized_x_offset = (screen.get_width() - resized_width) / 2
+            fix_screen_after_resize()
 
     # update the level
     level.run(dt)
     # resize the game screen and put it onto the screen and update it
     resized_screen = pygame.transform.scale(game_screen, (resized_width, resized_height))
     screen.blit(resized_screen, (resized_x_offset, resized_y_offset))
+
+    # draw the tracking result in the black area on the left
+    tracking_result_rgb = cv2.cvtColor(tracking_result, cv2.COLOR_RGB2BGR)
+    result_pygame_image = convert_opencv_image_to_pygame(tracking_result_rgb)
+    scaled_width = resized_x_offset
+    scaled_height = scaled_width / cam.get_aspect_ratio()
+    scaled_image = pygame.transform.scale(result_pygame_image, (scaled_width, scaled_height))
+    screen.blit(scaled_image, (0, 0))
     pygame.display.update()
