@@ -49,6 +49,7 @@ class Hand:
         self.is_left = is_left
         self.index_finger_joints = []
         self.pointing = False
+        self.last_state = False
 
     def update_pointing_status(self, threshold):
         distance = get_joints_distance(self.index_finger_joints)

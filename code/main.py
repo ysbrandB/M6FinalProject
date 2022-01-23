@@ -21,16 +21,15 @@ class Game:
 
     def __init__(self):
         self.is_running = True
-        
+        self.event_handler = EventHandler(self)
+
         if use_tracking:
-            self.tracker_thread = TrackerThread(1, self)
+            self.tracker_thread = TrackerThread(1, self, self.event_handler)
             self.tracker_thread.start()
         else:
             self.cam = None
             self.hand_tracker = None
         pygame.init()
-
-        self.event_handler = EventHandler(self)
 
         # make the screen and save the dimensions of your screen for fullscreen mode and resizing
         self.game_screen_ratio = game_screen_width / game_screen_height
@@ -78,7 +77,8 @@ class Game:
             scaled_width = self.resized_x_offset
             scaled_height = scaled_width / self.tracker_thread.cam.get_aspect_ratio()
             scaled_image = pygame.transform.scale(result_pygame_image, (scaled_width, scaled_height))
-            self.screen.blit(scaled_image, (0, 0))
+            flipped_image = pygame.transform.flip(scaled_image, True, False)
+            self.screen.blit(flipped_image, (0, 0))
         pygame.display.update()
 
     @staticmethod
@@ -132,18 +132,34 @@ class Game:
 
 
 class TrackerThread(threading.Thread):
-    def __init__(self, thread_id, context):
+    def __init__(self, thread_id, game_instance, event_handler):
         threading.Thread.__init__(self)
         self.threadID = thread_id
         self.cam = Camera(webcam_id)
         self.hand_tracker = HandTracker()
-        self.context = context
+        self.game_instance = game_instance
+        self.event_handler = event_handler
         self.tracking_result = None
 
     def run(self):
-        while self.context.is_running:
+        while self.game_instance.is_running:
             frame = self.cam.read_frame()
             self.tracking_result = self.hand_tracker.track_frame(frame, True)
+            self.check_for_events()
+
+    def check_for_events(self):
+        left_hand = self.hand_tracker.left_hand
+        right_hand = self.hand_tracker.right_hand
+        events = []
+        if left_hand.pointing is not left_hand.last_state:
+            events.append(EventTypes.LEFT_DOWN if left_hand.pointing else EventTypes.LEFT_UP)
+            left_hand.last_state = left_hand.pointing
+        if right_hand.pointing is not right_hand.last_state:
+            events.append(EventTypes.RIGHT_DOWN if right_hand.pointing else EventTypes.RIGHT_UP)
+            right_hand.last_state = right_hand.pointing
+
+        for event in events:
+            self.event_handler.emit(event)
 
 
 def convert_opencv_image_to_pygame(image):
