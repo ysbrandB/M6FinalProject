@@ -44,7 +44,7 @@ class Player(AnimatableTile):
         self.horizontal_movement(dt)
         self.vertical_movement(dt)
         self.collision(tiles)
-        self.grid_position = pygame.math.Vector2(round(self.position.x / self.size), round(self.position.y / self.size))
+        self.grid_position = pygame.math.Vector2(round(self.position.x / self.size[0]), round(self.position.y / self.size[1]))
         self.update_animation_state()
         self.set_correct_animation()
         self.animate(dt)
@@ -81,31 +81,31 @@ class Player(AnimatableTile):
                     size = tile.size
 
                     # vertical collisions
-                    if abs(self.position.x - tile_x) < size - 4:
+                    if abs(self.position.x - tile_x) < size[1] - 4:
                         # ceiling
-                        if tile_y + size - 2 > self.position.y > tile_y:
-                            self.position.y = tile_y + size - 2
+                        if tile_y + size[1] - 2 > self.position.y > tile_y:
+                            self.position.y = tile_y + size[1] - 2
                             self.velocity.y = 0
                             if tile_group == 'question_blocks':
                                 tile.player_collided()
 
                         # floor
-                        if self.position.y + size > tile_y > self.position.y:
-                            self.position.y = tile_y - size
+                        if self.position.y + size[1] > tile_y > self.position.y:
+                            self.position.y = tile_y - size[1]
                             self.velocity.y = 0
                             self.grounded = True
                             self.jumping = False
                             found_floor = True
 
                     # horizontal collisions
-                    if abs(self.position.y - tile_y) < size - 4:
+                    if abs(self.position.y - tile_y) < size[0] - 4:
                         # left wall collision
-                        if tile_x + size >= self.position.x > tile_x:
-                            self.position.x = tile_x + size
+                        if tile_x + size[0] >= self.position.x > tile_x:
+                            self.position.x = tile_x + size[0]
                             self.acceleration.x *= 0.75
                         # right wall collision
-                        if self.position.x + size > tile_x > self.position.x - size:
-                            self.position.x = tile_x - size
+                        if self.position.x + size[0] > tile_x > self.position.x - size[0]:
+                            self.position.x = tile_x - size[0]
                             self.acceleration.x *= 0.75
 
             if tile_group == 'coins':

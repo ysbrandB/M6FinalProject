@@ -29,7 +29,7 @@ class Tile:
                 self.neighbours.remove(other)
 
     def get_center(self):
-        return pygame.Vector2(self.position.x + self.size / 2, self.position.y + self.size / 2)
+        return pygame.Vector2(self.position.x + self.size[0] / 2, self.position.y + self.size[1] / 2)
 
 
 class SpriteTile(Tile):
@@ -73,10 +73,13 @@ class StaticTile(SpriteTile):
         flip_horizontal = bool(flags & 0b1000)
         flip_vertical = bool(flags & 0b0100)
         rotate = bool(flags & 0b0010)
-        self.image = pygame.transform.rotate(self.image, -90 * rotate)
-        self.image = pygame.transform.flip(self.image, flip_horizontal != rotate, flip_vertical)
+        rotation = -90*rotate
+        self.image = pygame.transform.rotate(self.image, rotation)
+        self.image = pygame.transform.flip(self.image, flip_horizontal != rotation, flip_vertical)
         self.static = True
-
+        # handle the way when you rotate uneven tiles the csv number is only placed on the bottom
+        if size[0] != size[1] and abs(rotation) == 90:
+            self.position.y -= global_tile_size
 
 class PassageTile(Tile):
     def __init__(self, size, grid_position):
@@ -117,7 +120,7 @@ class PassageTile(Tile):
 
     # even though this method exists, the passage tile is still flagged as non-drawable!
     def draw_debug_square(self, surface, color, alpha):
-        square = pygame.Surface((self.size, self.size))
+        square = pygame.Surface((self.size[0], self.size[1]))
         square.fill(color)
         square.set_alpha(alpha)
         surface.blit(square, self.position)

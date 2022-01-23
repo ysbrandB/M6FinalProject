@@ -8,7 +8,9 @@ from ghosts.blinky import Blinky
 from ghosts.clyde import Clyde
 from coin import Coin
 from questionblock import QuestionBlock
-from game_data import player as player_data, ghosts as ghosts_data, coins as coins_data, question_block as question_block_data
+from pipe_head import PipeHead
+from game_data import player as player_data, ghosts as ghosts_data, coins as coins_data, \
+    question_block as question_block_data, pipe_head as pipe_head_data
 
 
 class Level:
@@ -20,6 +22,7 @@ class Level:
         self.tiles['ghosts'] = []
         self.tiles['coins'] = []
         self.tiles['question_blocks'] = []
+        self.tiles['pipe_heads'] = []
         self.font = pygame.font.SysFont(None, 24)
         self.ghost_timer = 0
         self.ghost_chase = True
@@ -43,6 +46,7 @@ class Level:
         self.player = self.tiles['player'][0]
         self.ghosts = self.tiles['ghosts']
         self.coins = self.tiles['coins']
+        self.pipe_heads = self.tiles['pipe_heads']
         self.question_blocks = self.tiles['question_blocks']
         self.passages = self.tiles['ghost_passage']
 
@@ -53,29 +57,32 @@ class Level:
         match _type:
             case 'static':
                 image, flags = self.extract_image_and_flags(tile_id)
-                return StaticTile(tile_size, position, image, flags)
+                return StaticTile((tile_size, tile_size), position, image, flags)
             case 'passage':
-                return PassageTile(tile_size, position)
+                return PassageTile((tile_size, tile_size), position)
             case 'player':
                 frames = self.images['player']
-                return Player(tile_size, position, frames, player_data)
+                return Player((tile_size, tile_size), position, frames, player_data)
             case 'ghosts':
                 frames = self.images['ghosts']
-                match(tile_num % 4):
+                match (tile_num % 4):
                     case 0:
-                        return Blinky(tile_size, position, frames, ghosts_data, tile_num)
+                        return Blinky((tile_size, tile_size), position, frames, ghosts_data, tile_num)
                     case 1:
-                        return Pinky(tile_size, position, frames, ghosts_data, tile_num)
+                        return Pinky((tile_size, tile_size), position, frames, ghosts_data, tile_num)
                     case 2:
-                        return Inky(tile_size, position, frames, ghosts_data, tile_num)
+                        return Inky((tile_size, tile_size), position, frames, ghosts_data, tile_num)
                     case 3:
-                        return Clyde(tile_size, position, frames, ghosts_data, tile_num)
+                        return Clyde((tile_size, tile_size), position, frames, ghosts_data, tile_num)
             case 'coin':
                 frames = self.images['coins']
-                return Coin(tile_size / 2, position, frames, coins_data)
+                return Coin((tile_size/2, tile_size/2), position, frames, coins_data)
             case 'question_block':
                 frames = self.images['question_blocks']
-                return QuestionBlock(tile_size, position, frames, question_block_data, self.ghost_scared)
+                return QuestionBlock((tile_size, tile_size), position, frames, question_block_data, self.ghost_scared)
+            case 'pipe_head':
+                image = self.images['pipe_heads'][0]
+                return PipeHead((tile_size*2, tile_size), position, image, tile_id >> 28)
 
         return _type
 
@@ -84,11 +91,13 @@ class Level:
 
     def get_parsed_images(self):
         images = dict()
-        images['level'] = import_cut_graphics(self.level_data['tiles_sheet_path'])
-        images['player'] = import_cut_graphics(player_data['sprite_sheet_path'])
-        images['ghosts'] = import_cut_graphics(ghosts_data['sprite_sheet_path'])
-        images['coins'] = import_cut_graphics(coins_data['sprite_sheet_path'])
-        images['question_blocks'] = import_cut_graphics(question_block_data['sprite_sheet_path'])
+        images['level'] = import_cut_graphics(self.level_data['tiles_sheet_path'], self.level_data['sprite_size'])
+        images['player'] = import_cut_graphics(player_data['sprite_sheet_path'], player_data['sprite_size'])
+        images['ghosts'] = import_cut_graphics(ghosts_data['sprite_sheet_path'], ghosts_data['sprite_size'])
+        images['coins'] = import_cut_graphics(coins_data['sprite_sheet_path'], coins_data['sprite_size'])
+        images['question_blocks'] = import_cut_graphics(question_block_data['sprite_sheet_path'],
+                                                        question_block_data['sprite_size'])
+        images['pipe_heads'] = import_cut_graphics(pipe_head_data['sprite_sheet_path'], pipe_head_data['sprite_size'])
         return images
 
     def run(self, dt):
@@ -110,7 +119,8 @@ class Level:
             self.ghost_timer -= dt / 100
 
         for ghost in self.ghosts:
-            ghost.live(dt, self.display_surface, self.player, self.passages, self.ghosts, self.ghost_chase, self.ghost_scared)
+            ghost.live(dt, self.display_surface, self.player, self.passages, self.ghosts, self.ghost_chase,
+                       self.ghost_scared)
 
         for coin in self.coins:
             coin.live(dt, self.display_surface)
@@ -119,5 +129,5 @@ class Level:
             question_block.live(dt, self.display_surface)
 
         txt = self.font.render(f"{self.player.collected_coins}/{self.total_coins}", True, (255, 255, 255))
-        self.display_surface.blit(txt, (self.display_surface.get_width() - 7 * tile_size, self.display_surface.get_height() - tile_size))
-
+        self.display_surface.blit(txt, (
+            self.display_surface.get_width() - 7 * tile_size, self.display_surface.get_height() - tile_size))

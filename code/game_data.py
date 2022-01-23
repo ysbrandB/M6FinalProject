@@ -1,44 +1,58 @@
 # Layers are stacked in order of drawing
 level_0 = {
     'tiles_sheet_path': '../imgs/terrain/mario_terrain.png',
+    'sprite_size': (1, 1),
     'layers': {
         'terrain': {
             'path': '../levels/level_data/0/level0_Level.csv',
-            'type': 'static'
+            'type': 'static',
         },
         'ghost_passage': {
             'path': '../levels/level_data/0/level0_GhostPassage.csv',
-            'type': 'passage'
+            'type': 'passage',
         },
         'scenery': {
             'path': '../levels/level_data/0/level0_Scenery.csv',
-            'type': 'static'
+            'type': 'static',
         },
         'scenery2': {
             'path': '../levels/level_data/0/level0_Additional Scenery.csv',
-            'type': 'static'
+            'type': 'static',
         },
         'player': {
             'path': '../levels/level_data/0/level0_Mario.csv',
-            'type': 'player'
+            'type': 'player',
         },
         'ghosts': {
             'path': '../levels/level_data/0/level0_Pacman.csv',
-            'type': 'ghosts'
+            'type': 'ghosts',
         },
         'coins': {
             'path': '../levels/level_data/0/level0_Coins.csv',
-            'type': 'coin'
+            'type': 'coin',
         },
         'question_blocks': {
             'path': '../levels/level_data/0/level0_Question_blocks.csv',
-            'type': 'question_block'
-        }
+            'type': 'question_block',
+        },
+        'pipe_head_pair_0': {
+            'path': '../levels/level_data/0/level0_Pipe_head_pair_0.csv',
+            'type': 'pipe_head',
+        },
+        'pipe_head_pair_1': {
+            'path': '../levels/level_data/0/level0_Pipe_head_pair_1.csv',
+            'type': 'pipe_head',
+        },
+        'pipe_head_pair_2': {
+            'path': '../levels/level_data/0/level0_Pipe_head_pair_2.csv',
+            'type': 'pipe_head',
+        },
     }
 }
 
 player = {
     'sprite_sheet_path': '../imgs/player/shroomaddict.png',
+    'sprite_size': (1, 1),
     'animation_idle': {
         'frames': [0],
         'fps': 1,
@@ -59,6 +73,7 @@ player = {
 
 ghosts = {
     'sprite_sheet_path': '../imgs/ghosts/ghost_sprites.png',
+    'sprite_size': (1, 1),
     'seconds_following': 12,
     'seconds_spreading': 8,
     'animation_idle': {
@@ -104,6 +119,7 @@ ghosts = {
 
 coins = {
     'sprite_sheet_path': '../imgs/coin/coin.png',
+    'sprite_size': (1, 1),
     'animation_idle': {
         'frames': [0, 1, 2, 3, 4, 5, 6, 7],
         'fps': 10
@@ -112,6 +128,7 @@ coins = {
 
 question_block = {
     'sprite_sheet_path': '../imgs/question_block/question_block.png',
+    'sprite_size': (1, 1),
     'animation_idle': {
         'frames': [0, 0, 0, 1, 2],
         'fps': 4
@@ -122,4 +139,11 @@ question_block = {
     }
 }
 
-
+pipe_head = {
+    'sprite_sheet_path': '../imgs/pipe_head/mario_pipes.png',
+    'sprite_size': (2, 1),
+    'animation_idle': {
+        'frames': [0],
+        'fps': 1
+    },
+}
