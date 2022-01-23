@@ -127,8 +127,7 @@ class Level:
             self.ghost_timer -= dt / 100
 
         for ghost in self.ghosts:
-            ghost.live(dt, self.display_surface, self.player, self.passages, self.ghosts, self.ghost_chase,
-                       self.ghost_scared)
+            ghost.live(dt, self.display_surface, self.player, self.passages, self.ghosts, self.ghost_chase)
 
         for coin in self.coins:
             coin.live(dt, self.display_surface)

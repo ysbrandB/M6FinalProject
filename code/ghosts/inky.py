@@ -11,7 +11,7 @@ import math
 import pygame
 
 
-def find_scatter_position(passages, scared):
+def find_scatter_position(passages):
     # scatters to the bottom_right corner
     x = (randrange(0, math.floor(horizontal_tile_number / 2 * tile_size)))
     y = (randrange(math.floor(vertical_tile_number / 2 * tile_size), 2 * math.floor(vertical_tile_number / 2 * tile_size)))

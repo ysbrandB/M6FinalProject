@@ -29,10 +29,11 @@ class Ghost(AnimatableTile):
         self.SPREADING = 1
         self.DEAD = 2
         self.SCARED = 3
-        self.state = self.SCARED
+        self.state = self.FOLLOWING
         self.manhattan_dist_to_player = 0
+        self.scare_cooldown = 0
 
-    def live(self, dt, surface, player, passages, ghosts, ghost_follow, ghost_scared):
+    def live(self, dt, surface, player, passages, ghosts, ghost_follow):
         self.position += (self.dir.elementwise() * dt * 0.5)
         self.grid_position = pygame.math.Vector2(math.floor(self.position.x / self.size[0]),
                                                  math.floor(self.position.y / self.size[1]))
@@ -40,17 +41,24 @@ class Ghost(AnimatableTile):
             self.grid_position.y - player.grid_position.y)
         self.move_to_target(player, passages, ghosts)
         self.set_animation()
-        self.set_state(ghost_follow, ghost_scared)
+        self.set_state(ghost_follow)
         self.animate(dt)
         self.draw_path(surface)
         self.draw(surface)
 
-    def set_state(self, ghost_follow, ghost_scared):
+        if self.scare_cooldown > 0:
+            self.scare_cooldown -= dt
+            print(self.scare_cooldown)
+            if self.scare_cooldown < 0:
+                self.scare_cooldown = 0
+
+    def set_state(self, ghost_follow):
         # set the state this ghost is in, following or spreading decided by level, the rest by the ghost itself
         if self.state == self.DEAD:
             if self.origin.distance_to(self.grid_position) < 2:
                 self.state = self.FOLLOWING
-        elif self.state != self.SCARED:
+
+        elif self.state != self.SCARED or self.state == self.SCARED and self.scare_cooldown <= 0:
             if ghost_follow:
                 self.state = self.FOLLOWING
             else:
@@ -109,7 +117,8 @@ class Ghost(AnimatableTile):
                     self.animation = self.data[f'animation{"_dead" if self.state == self.DEAD else ""}_up']
                 case 1:
                     self.animation = self.data[f'animation{"_dead" if self.state == self.DEAD else ""}_down']
-
+        if self.frame_index >= len(self.frames):
+            self.frame_index = 0
     # draw the current path of the ghost with a color based upon id and brightness based upon the vicinity to the target
     def draw_path(self, surface):
         if self.path:
@@ -128,3 +137,4 @@ class Ghost(AnimatableTile):
 
     def scare(self):
         self.state = self.SCARED
+        self.scare_cooldown = 500

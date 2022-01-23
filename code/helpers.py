@@ -33,10 +33,21 @@ def map_from_to(x, a, b, c, d):
     return mapped
 
 
-def find_tile_from_position(position, passages):
+def find_tile_from_grid_position(grid_position, passages):
+    found_position=None
     for passage in passages:
-        if position == passage.grid_position:
-            return passage
+        if grid_position == passage.grid_position:
+            found_position = passage
+    if found_position:
+        return found_position
+    else:
+        nearest_passage = passages[0]
+        nearest_distance = float('inf')
+        for passage in passages:
+            if grid_position.distance_to(passage.grid_position) < nearest_distance:
+                nearest_passage = passage
+                nearest_distance = grid_position.distance_to(passage.grid_position) < nearest_distance
+        return nearest_passage
 
 
 def find_nearest_passage_to_vector(target_position, passages):
@@ -54,8 +65,8 @@ def a_star_search(target, passages, grid_position):
     for passage in passages:
         passage.reset()
 
-    target_tile = find_tile_from_position(target.grid_position, passages)
-    my_tile = find_tile_from_position(grid_position, passages)
+    target_tile = find_tile_from_grid_position(target.grid_position, passages)
+    my_tile = find_tile_from_grid_position(grid_position, passages)
     queue = [my_tile]
     visited = []
 
@@ -94,8 +105,8 @@ def greedy_search(target, passages, grid_position):
     for passage in passages:
         passage.reset()
 
-    target_tile = find_tile_from_position(target.grid_position, passages)
-    my_tile = find_tile_from_position(grid_position, passages)
+    target_tile = find_tile_from_grid_position(target.grid_position, passages)
+    my_tile = find_tile_from_grid_position(grid_position, passages)
     queue = [my_tile]
     visited = []
 

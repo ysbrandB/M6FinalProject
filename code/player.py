@@ -38,6 +38,7 @@ class Player(AnimatableTile):
         self.coin_snd = pygame.mixer.Sound('../sfx/coin.wav')
         self.ghost_snd = pygame.mixer.Sound('../sfx/ghost.wav')
         self.ghost_snd.play(-1)
+        self.teleport_cooldown = 0
 
     def live(self, dt, surface, tiles):
         self.horizontal_movement(dt)
@@ -49,7 +50,10 @@ class Player(AnimatableTile):
         self.set_correct_animation()
         self.animate(dt)
         self.draw(surface)
-        # self.detect_ghosts(ghosts)
+        self.detect_ghosts(tiles['ghosts'])
+
+        if self.teleport_cooldown > 0:
+            self.teleport_cooldown -= dt
 
     def horizontal_movement(self, dt):
         self.acceleration.x = 0
@@ -75,20 +79,24 @@ class Player(AnimatableTile):
         found_floor = False
         for tile_group in tiles:
             if tile_group == 'terrain' or tile_group == 'question_blocks':
+
                 for tile in tiles[tile_group]:
                     tile_x = tile.position.x
                     tile_y = tile.position.y
                     size = tile.size
 
                     # vertical collisions
-                    if abs(self.position.x - tile_x) < size[1] - 4:
+                    if abs(self.position.x - tile_x) < size[0] - 4:
                         # ceiling
                         if tile_y + size[1] - 2 > self.position.y > tile_y:
                             self.position.y = tile_y + size[1] - 2
                             self.velocity.y = 0
+
+                            # scare the ghosts when colission with question blocks
                             if tile_group == 'question_blocks':
                                 tile.player_collided()
-
+                                for ghost in tiles['ghosts']:
+                                    ghost.scare()
                         # floor
                         if self.position.y + size[1] > tile_y > self.position.y:
                             self.position.y = tile_y - size[1]
@@ -107,12 +115,17 @@ class Player(AnimatableTile):
                         if self.position.x + size[0] > tile_x > self.position.x - size[0]:
                             self.position.x = tile_x - size[0]
                             self.acceleration.x *= 0.75
-            if 'pipe_head_pair' in tile_group:
-                for tile in tiles[tile_group]:
-                    if tile.position.x < self.position.x < tile.position.x+tile.size[0] and tile.position.y < self.position.y < tile.position.y+tile.size[1]:
-                        print("collided")
 
-            if tile_group == 'coins':
+            elif 'pipe_head_pair' in tile_group:
+                for tile in tiles[tile_group]:
+                    if tile.position.x < self.position.x < tile.position.x + tile.size[0] and \
+                            tile.position.y < self.position.y < tile.position.y + tile.size[1]:
+                        if self.teleport_cooldown <= 0:
+                            self.teleport_cooldown = 500
+                            self.position = tile.get_paired_location()
+
+
+            elif tile_group == 'coins':
                 for tile in tiles[tile_group]:
                     if self.get_center().distance_to(tile.get_center()) < 10:
                         self.collected_coins += 1

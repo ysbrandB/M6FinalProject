@@ -1,6 +1,6 @@
 from tiles import StaticTile
 import pygame
-
+import copy
 
 class PipeHead(StaticTile):
     def __init__(self, size, grid_position, image, flags):
@@ -11,8 +11,7 @@ class PipeHead(StaticTile):
         self.paired_pipe = pipe
 
     def get_paired_location(self):
-        print("paired pipe location:" + self.paired_pipe.position)
-        return self.paired_pipe.position
+        return copy.copy(self.paired_pipe.position)
 
     def draw_debug(self, surface):
         square = pygame.Surface((self.size[0], self.size[1]))
