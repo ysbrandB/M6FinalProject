@@ -11,6 +11,7 @@ class Player(AnimatableTile):
         self.right = False
         self.flipped = False
         self.jumping = False
+        self.AAAAAAAAAAAAAAA_IT_HURTS = False
         self.jump_cooldown_timer = 0
         self.jump_cooldown = 10
         self.grounded = False
@@ -33,12 +34,14 @@ class Player(AnimatableTile):
         self.WALKING = 1
         self.RUNNING = 2
         self.JUMPING = 3
+        self.DEDE = 4
         self.current_state = self.STILL
         self.last_state = self.STILL
 
         self.jump_snd = pygame.mixer.Sound('../sfx/jump.wav')
         self.coin_snd = pygame.mixer.Sound('../sfx/coin.wav')
         self.ghost_snd = pygame.mixer.Sound('../sfx/ghost.wav')
+        self.dede_snd = pygame.mixer.Sound('../sfx/🦀mario🦀is🦀gone.wav')
         self.ghost_snd.play(-1)
         self.teleport_cooldown = 0
 
@@ -128,7 +131,6 @@ class Player(AnimatableTile):
                             self.teleport_cooldown = 500
                             self.position = tile.get_paired_location()
 
-
             elif tile_group == 'coins':
                 for tile in tiles[tile_group]:
                     if self.get_center().distance_to(tile.get_center()) < 10:
@@ -161,17 +163,20 @@ class Player(AnimatableTile):
         surface.blit(to_draw, self.position)
 
     def update_animation_state(self):
-        if self.jumping and not self.grounded:
-            self.current_state = self.JUMPING
-            return
-        if self.left ^ self.right:
-            if self.speed_multiplier == self.RUNNING_SPEED:
-                self.current_state = self.RUNNING
+        if not self.AAAAAAAAAAAAAAA_IT_HURTS:
+            if self.jumping and not self.grounded:
+                self.current_state = self.JUMPING
                 return
-            else:
-                self.current_state = self.WALKING
-                return
-        self.current_state = self.STILL
+            if self.left ^ self.right:
+                if self.speed_multiplier == self.RUNNING_SPEED:
+                    self.current_state = self.RUNNING
+                    return
+                else:
+                    self.current_state = self.WALKING
+                    return
+            self.current_state = self.STILL
+        else:
+            self.current_state = self.DEDE
 
     def set_correct_animation(self):
         if not self.current_state == self.last_state:
@@ -185,6 +190,8 @@ class Player(AnimatableTile):
                 self.animation = self.data['animation_running']
             case self.JUMPING:
                 self.animation = self.data['animation_jumping']
+            case self.DEDE:
+                self.animation = self.data['animation_dede']
 
     def detect_ghosts(self, ghosts):
         nearest_ghost = ghosts[0]
@@ -192,9 +199,11 @@ class Player(AnimatableTile):
             if ghost.manhattan_dist_to_player < nearest_ghost.manhattan_dist_to_player:
                 nearest_ghost = ghost
 
-            if nearest_ghost.manhattan_dist_to_player < 2:
-                if ghost.state == ghost.SCARED or ghost.state == ghost.DEAD:
-                    ghost.die()
+        if nearest_ghost.manhattan_dist_to_player < 2:
+            if ghost.state == ghost.SCARED or ghost.state == ghost.DEAD:
+                ghost.die()
+            else:
+                self.die()
 
         volume = 0.5 - nearest_ghost.manhattan_dist_to_player / ((horizontal_tile_number + vertical_tile_number) / 2)
         self.ghost_snd.set_volume(volume)
@@ -202,3 +211,9 @@ class Player(AnimatableTile):
     def get_facing_direction(self):
         vector = pygame.math.Vector2(1 if self.right else -1, 0)
         return vector
+
+    def die(self):
+        if not self.AAAAAAAAAAAAAAA_IT_HURTS:
+            self.AAAAAAAAAAAAAAA_IT_HURTS = True
+            self.update_animation_state()
+            self.dede_snd.play()

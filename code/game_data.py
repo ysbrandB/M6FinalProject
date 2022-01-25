@@ -66,6 +66,10 @@ player = {
     'animation_jumping': {
         'frames': [5],
         'fps': 1
+    },
+    'animation_dede': {
+        'frames': [6],
+        'fps': 1
     }
 }
 
