@@ -10,7 +10,7 @@ from coin import Coin
 from questionblock import QuestionBlock
 from pipe_head import PipeHead
 from game_data import player as player_data, ghosts as ghosts_data, coins as coins_data, \
-    question_block as question_block_data, pipe_head as pipe_head_data
+    question_block as question_block_data, pipe_head as pipe_head_data, ui as ui_data
 
 
 class Level:
@@ -22,7 +22,6 @@ class Level:
         self.tiles['ghosts'] = []
         self.tiles['coins'] = []
         self.tiles['question_blocks'] = []
-        self.font = pygame.font.SysFont(None, 24)
         self.ghost_timer = 0
         self.ghost_chase = True
         self.ghost_scared = False
@@ -139,7 +138,3 @@ class Level:
 
         for pipe in self.pipes:
             pipe.draw_debug(self.display_surface)
-
-        txt = self.font.render(f"{self.player.collected_coins}/{self.total_coins}", True, (255, 255, 255))
-        self.display_surface.blit(txt, (
-            self.display_surface.get_width() - 7 * tile_size, self.display_surface.get_height() - tile_size))

@@ -47,9 +47,10 @@ class Player(AnimatableTile):
 
     def live(self, dt, surface, tiles):
         self.jump_cooldown_timer += dt
-        self.horizontal_movement(dt)
         self.vertical_movement(dt)
-        self.collision(tiles)
+        if not self.AAAAAAAAAAAAAAA_IT_HURTS:
+            self.horizontal_movement(dt)
+            self.collision(tiles)
         self.grid_position = pygame.math.Vector2(round(self.position.x / self.size),
                                                  round(self.position.y / self.size))
         self.update_animation_state()
@@ -217,3 +218,6 @@ class Player(AnimatableTile):
             self.AAAAAAAAAAAAAAA_IT_HURTS = True
             self.update_animation_state()
             self.dede_snd.play()
+            self.jumping = True
+            self.velocity.y = -self.max_ver_vel * self.jump_speed_multiplier
+            self.grounded = False

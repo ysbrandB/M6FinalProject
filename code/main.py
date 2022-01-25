@@ -5,6 +5,7 @@ import threading
 
 from game_data import level_0
 from level import Level
+from ui import UI
 from settings import *
 
 from tracking.cam import Camera
@@ -52,6 +53,8 @@ class Game:
         self.level = Level(level_0, self.game_screen)
         self.player = self.level.player
         self.ghosts = self.level.ghosts
+
+        self.ui = UI()
         intro = pygame.mixer.Sound('../sfx/intro.wav')
         intro.play()
 
@@ -70,6 +73,9 @@ class Game:
         # resize the game screen and put it onto the screen and update it
         resized_screen = pygame.transform.scale(self.game_screen, (self.resized_width, self.resized_height))
         self.screen.blit(resized_screen, (self.resized_x_offset, self.resized_y_offset))
+
+        # draw the ui
+        self.ui.draw(self.level, self.screen, self.resized_x_offset)
 
         # draw the tracking result in the black area on the left
         if use_tracking and self.tracker_thread.tracking_result is not None:

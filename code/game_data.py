@@ -145,3 +145,7 @@ pipe_head = {
         'fps': 1
     },
 }
+
+ui = {
+    'sprite_sheet_path': '../imgs/ui/ui.png'
+}
