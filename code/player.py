@@ -11,6 +11,8 @@ class Player(AnimatableTile):
         self.right = False
         self.flipped = False
         self.jumping = False
+        self.jump_cooldown_timer = 0
+        self.jump_cooldown = 10
         self.grounded = False
         self.collected_coins = 0
         self.gravity = 0.09
@@ -41,6 +43,7 @@ class Player(AnimatableTile):
         self.teleport_cooldown = 0
 
     def live(self, dt, surface, tiles):
+        self.jump_cooldown_timer += dt
         self.horizontal_movement(dt)
         self.vertical_movement(dt)
         self.collision(tiles)
@@ -145,11 +148,12 @@ class Player(AnimatableTile):
             self.grounded = False
 
     def jump(self):
-        if self.grounded:
+        if self.grounded and self.jump_cooldown_timer > self.jump_cooldown:
             self.jumping = True
             self.velocity.y = -self.max_ver_vel * self.jump_speed_multiplier
             self.grounded = False
             self.jump_snd.play()
+            self.jump_cooldown_timer = 0
 
     def draw(self, surface):
         # overwriting super to incorporate flipping

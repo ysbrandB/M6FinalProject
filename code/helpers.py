@@ -1,5 +1,6 @@
 from csv import reader
 from settings import tile_size
+from math import sqrt
 import pygame
 import bisect
 
@@ -134,3 +135,11 @@ def greedy_search(target, passages, grid_position):
         path = None
 
     return path
+
+def get_points_distance(points):
+    total = 0
+    for i in range(1, len(points)):
+        x_dif = points[i].x - points[i - 1].x
+        y_dif = points[i].y - points[i - 1].y
+        total += sqrt(x_dif ** 2 + y_dif ** 2)
+    return total

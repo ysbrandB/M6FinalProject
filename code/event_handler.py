@@ -40,6 +40,7 @@ class EventHandler:
                 self.game.fix_screen_after_resize()
             case EventTypes.QUIT:
                 self.game.is_running = False
+        return True
 
 
 class EventTypes(enum.Enum):

@@ -9,6 +9,7 @@ from settings import *
 
 from tracking.cam import Camera
 from tracking.hand_tracker import HandTracker
+from tracking.face_tracker import FaceTracker
 
 from event_handler import EventHandler, EventTypes
 
@@ -138,13 +139,15 @@ class TrackerThread(threading.Thread):
         self.cam = Camera(webcam_id)
         self.event_handler = event_handler
         self.hand_tracker = HandTracker(event_handler)
+        self.face_tracker = FaceTracker(event_handler)
         self.game_instance = game_instance
         self.tracking_result = None
 
     def run(self):
         while self.game_instance.is_running:
             frame = self.cam.read_frame()
-            self.tracking_result = self.hand_tracker.track_frame(frame, True)
+            hand_tracked_frame = self.hand_tracker.track_frame(frame, True)
+            self.tracking_result = self.face_tracker.track_frame(hand_tracked_frame, True)
 
 
 def convert_opencv_image_to_pygame(image):

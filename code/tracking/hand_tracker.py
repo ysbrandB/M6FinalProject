@@ -2,8 +2,8 @@ import cv2
 from mediapipe.python.solutions.hands import Hands as CreateHandsModel, HAND_CONNECTIONS
 from mediapipe.python.solutions.drawing_utils import draw_landmarks
 from mediapipe.python.solutions.drawing_styles import get_default_hand_landmarks_style, get_default_hand_connections_style
-from math import sqrt
 from event_handler import EventTypes
+from helpers import get_points_distance
 
 class HandTracker:
 
@@ -20,7 +20,6 @@ class HandTracker:
         multi_handedness = result.multi_handedness
         if debug:
             frame.flags.writeable = True
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         if multi_hand_landmarks:
             # hands detected, process the output
             for index, landmarks in enumerate(multi_hand_landmarks):
@@ -28,7 +27,8 @@ class HandTracker:
                 # mediapipe flips left and right
                 if multi_handedness[index].classification[0].label == "Left":
                     hand = self.right_hand
-                if len(multi_handedness) == 1:
+                hand.enable()
+                if len(multi_hand_landmarks) == 1:
                     self.get_other_hand(hand).disable()
                 hand.update_finger_joints(landmarks)
                 hand.update_pointing_status(self.pointing_distance_threshold)
@@ -40,9 +40,11 @@ class HandTracker:
                 self.event_handler.emit(EventTypes.RUN_DOWN)
             else:
                 self.event_handler.emit(EventTypes.RUN_UP)
-        else:
-            self.left_hand.disable()
-            self.right_hand.disable()
+        elif not self.left_hand.disabled or not self.right_hand.disabled:
+            if not self.left_hand.disabled:
+                self.left_hand.disable()
+            if not self.right_hand.disabled:
+                self.right_hand.disable()
             self.event_handler.emit(EventTypes.RUN_UP)
         return frame
 
@@ -57,10 +59,11 @@ class Hand:
         self.event_handler = event_handler
         self.index_finger_joints = []
         self.pointing = False
+        self.disabled = True
 
     def update_pointing_status(self, threshold):
         last_state = self.pointing
-        distance = get_joints_distance(self.index_finger_joints)
+        distance = get_points_distance(self.index_finger_joints)
         self.pointing = distance > threshold and is_pointing_right_way(self.index_finger_joints, self.is_left)
         if last_state is not self.pointing:
             if self.is_left:
@@ -73,15 +76,13 @@ class Hand:
         self.index_finger_joints = (landmarks.landmark[6], landmarks.landmark[7], landmarks.landmark[8])
 
     def disable(self):
-        self.event_handler.emit(EventTypes.LEFT_UP if self.is_left else EventTypes.RIGHT_UP)
+        if not self.disabled:
+            self.disabled = True
+            self.event_handler.emit(EventTypes.LEFT_UP if self.is_left else EventTypes.RIGHT_UP)
 
-def get_joints_distance(joints):
-    total = 0
-    for i in range(1, len(joints)):
-        x_dif = joints[i].x - joints[i - 1].x
-        y_dif = joints[i].y - joints[i - 1].y
-        total += sqrt(x_dif ** 2 + y_dif ** 2)
-    return total
+    def enable(self):
+        self.disabled = False
+
 
 
 def is_pointing_right_way(joints, is_left):
