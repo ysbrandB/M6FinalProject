@@ -5,6 +5,7 @@ from settings import ghost_tiles_to_follow, tile_size, vertical_tile_number, hor
 from tiles import AnimatableTile
 from helpers import map_from_to, find_nearest_passage_to_vector
 
+
 # a class dedicated to showing, updating and pathfinding the ghosts of pacman
 
 class Ghost(AnimatableTile):
@@ -30,7 +31,7 @@ class Ghost(AnimatableTile):
         self.DEAD = 2
         self.SCARED = 3
         self.state = self.FOLLOWING
-        self.manhattan_dist_to_player = 0
+        self.manhattan_dist_to_player = 5
         self.scare_cooldown = 0
 
     def live(self, dt, surface, player, passages, ghosts, ghost_follow):
@@ -119,6 +120,7 @@ class Ghost(AnimatableTile):
                     self.animation = self.data[f'animation{"_dead" if self.state == self.DEAD else ""}_down']
         if self.frame_index >= len(self.frames):
             self.frame_index = 0
+
     # draw the current path of the ghost with a color based upon id and brightness based upon the vicinity to the target
     def draw_path(self, surface):
         if self.path:

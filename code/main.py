@@ -151,9 +151,10 @@ class TrackerThread(threading.Thread):
 
     def run(self):
         while self.game_instance.is_running:
-            frame = self.cam.read_frame()
-            hand_tracked_frame = self.hand_tracker.track_frame(frame, True)
-            self.tracking_result = self.face_tracker.track_frame(hand_tracked_frame, True)
+            if hasattr(self.game_instance, 'player'):
+                frame = self.cam.read_frame()
+                hand_tracked_frame = self.hand_tracker.track_frame(frame, True)
+                self.tracking_result = self.face_tracker.track_frame(hand_tracked_frame, True)
 
 
 def convert_opencv_image_to_pygame(image):

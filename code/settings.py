@@ -8,5 +8,5 @@ max_delta_time = 3
 ghost_tiles_to_follow = 10
 window_scale = 1.5
 tracker_width = 200
-webcam_id = 2
+webcam_id = 1
 use_tracking = True
