@@ -10,7 +10,8 @@ from coin import Coin
 from questionblock import QuestionBlock
 from pipe_head import PipeHead
 from game_data import player as player_data, ghosts as ghosts_data, coins as coins_data, \
-    question_block as question_block_data, pipe_head as pipe_head_data, ui as ui_data
+    question_block as question_block_data, pipe_head as pipe_head_data
+import copy
 
 
 class Level:
@@ -40,12 +41,27 @@ class Level:
                         layer_tiles.append(self.create_tile(layer_type, grid_position, tile_id, tile_num))
                         tile_num += 1
             self.tiles[layer] = layer_tiles
-        self.total_coins = len(self.tiles['coins'])
         self.player = self.tiles['player'][0]
-        self.ghosts = self.tiles['ghosts']
-        self.coins = self.tiles['coins']
-        self.question_blocks = self.tiles['question_blocks']
+        self.player_start = copy.deepcopy(self.player.position)
+        self.ghosts = self.tiles['ghosts'].copy()
+        self.coins = self.tiles['coins'].copy()
+        self.question_blocks = self.tiles['question_blocks'].copy()
         self.passages = self.tiles['ghost_passage']
+
+        self.total_coins = len(self.coins)
+
+        self.reset_countdown = 500
+        self.reset_timer = 0
+
+        self.intro_snd = pygame.mixer.Sound('../sfx/intro.wav')
+        self.congratulations_snd = pygame.mixer.Sound('../sfx/wedidit.wav')
+        self.intro_snd.play()
+
+        self.RUNNING = 0
+        self.SOFT_RESET = 1
+        self.FULL_RESET = 2
+        self.WE_WON = 3
+        self.state = self.RUNNING
 
         for tile in self.passages:
             tile.find_neighbours(self.passages)
@@ -115,6 +131,20 @@ class Level:
             for tile in self.tiles[tile_group]:
                 if tile.drawable and tile.static:
                     tile.draw(self.display_surface)
+        if self.player.collected_coins >= self.total_coins and not self.player.frozen:
+            self.player.frozen = True
+            self.player.lives = 0
+            self.congratulations_snd.play()
+        if self.player.frozen:
+            if self.player.lives > 0:
+                self.state = self.SOFT_RESET
+            elif self.player.collected_coins >= self.total_coins:
+                self.state = self.WE_WON
+            else:
+                self.state = self.FULL_RESET
+            self.do_reset_countdown(dt)
+            if self.state == self.WE_WON:
+                return
         self.player.live(dt, self.display_surface, self.tiles)
 
         if self.ghost_timer <= 0:
@@ -127,14 +157,35 @@ class Level:
         else:
             self.ghost_timer -= dt / 100
 
-        for ghost in self.ghosts:
-            ghost.live(dt, self.display_surface, self.player, self.passages, self.ghosts, self.ghost_chase)
+        for ghost in self.tiles['ghosts']:
+            ghost.live(dt, self.display_surface, self.player, self.passages, self.tiles['ghosts'], self.ghost_chase)
 
-        for coin in self.coins:
+        for coin in self.tiles['coins']:
             coin.live(dt, self.display_surface)
 
-        for question_block in self.question_blocks:
+        for question_block in self.tiles['question_blocks']:
             question_block.live(dt, self.display_surface)
 
-        for pipe in self.pipes:
-            pipe.draw_debug(self.display_surface)
+    def reset(self):
+        self.player.position = copy.copy(self.player_start)
+        self.tiles['ghosts'] = copy.copy(self.ghosts)
+        self.player.frozen = False
+        self.intro_snd.play()
+        self.state = self.RUNNING
+
+    def do_reset_countdown(self, dt):
+        if not self.reset_timer >= self.reset_countdown:
+            self.reset_timer += dt
+        else:
+            self.reset_timer = 0
+            self.reset() if self.player.lives > 0 else self.game_over()
+
+    def game_over(self):
+        self.reset()
+        self.tiles['coins'] = copy.copy(self.coins)
+        # fix frame indices not lining up
+        for coin in self.tiles['coins']:
+            coin.frame_index = 0
+        self.tiles['question_blocks'] = copy.copy(self.question_blocks)
+        self.player.lives = 3
+        self.player.collected_coins = 0

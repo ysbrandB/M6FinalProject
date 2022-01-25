@@ -30,7 +30,7 @@ class Ghost(AnimatableTile):
         self.DEAD = 2
         self.SCARED = 3
         self.state = self.FOLLOWING
-        self.manhattan_dist_to_player = 0
+        self.manhattan_dist_to_player = 5
         self.scare_cooldown = 0
 
     def live(self, dt, surface, player, passages, ghosts, ghost_follow):
@@ -43,7 +43,7 @@ class Ghost(AnimatableTile):
         self.set_animation()
         self.set_state(ghost_follow)
         self.animate(dt)
-        self.draw_path(surface)
+        # self.draw_path(surface)
         self.draw(surface)
 
         if self.scare_cooldown > 0:

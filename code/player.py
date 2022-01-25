@@ -11,7 +11,7 @@ class Player(AnimatableTile):
         self.right = False
         self.flipped = False
         self.jumping = False
-        self.AAAAAAAAAAAAAAA_IT_HURTS = False
+        self.frozen = False
         self.jump_cooldown_timer = 0
         self.jump_cooldown = 10
         self.grounded = False
@@ -42,13 +42,16 @@ class Player(AnimatableTile):
         self.coin_snd = pygame.mixer.Sound('../sfx/coin.wav')
         self.ghost_snd = pygame.mixer.Sound('../sfx/ghost.wav')
         self.dede_snd = pygame.mixer.Sound('../sfx/🦀mario🦀is🦀gone.wav')
+
+        self.ghost_snd.set_volume(0)
         self.ghost_snd.play(-1)
+        self.lives = 3
         self.teleport_cooldown = 0
 
     def live(self, dt, surface, tiles):
         self.jump_cooldown_timer += dt
         self.vertical_movement(dt)
-        if not self.AAAAAAAAAAAAAAA_IT_HURTS:
+        if not self.frozen:
             self.horizontal_movement(dt)
             self.collision(tiles)
         self.grid_position = pygame.math.Vector2(round(self.position.x / self.size),
@@ -164,7 +167,7 @@ class Player(AnimatableTile):
         surface.blit(to_draw, self.position)
 
     def update_animation_state(self):
-        if not self.AAAAAAAAAAAAAAA_IT_HURTS:
+        if not self.frozen:
             if self.jumping and not self.grounded:
                 self.current_state = self.JUMPING
                 return
@@ -203,7 +206,7 @@ class Player(AnimatableTile):
         if nearest_ghost.manhattan_dist_to_player < 2:
             if ghost.state == ghost.SCARED or ghost.state == ghost.DEAD:
                 ghost.die()
-            else:
+            elif not self.frozen:
                 self.die()
 
         volume = 0.5 - nearest_ghost.manhattan_dist_to_player / ((horizontal_tile_number + vertical_tile_number) / 2)
@@ -214,10 +217,11 @@ class Player(AnimatableTile):
         return vector
 
     def die(self):
-        if not self.AAAAAAAAAAAAAAA_IT_HURTS:
-            self.AAAAAAAAAAAAAAA_IT_HURTS = True
+        if not self.frozen:
+            self.frozen = True
             self.update_animation_state()
             self.dede_snd.play()
             self.jumping = True
             self.velocity.y = -self.max_ver_vel * self.jump_speed_multiplier
             self.grounded = False
+            self.lives -= 1

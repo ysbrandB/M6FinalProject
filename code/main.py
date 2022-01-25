@@ -25,12 +25,6 @@ class Game:
         self.is_running = True
         self.event_handler = EventHandler(self)
 
-        if use_tracking:
-            self.tracker_thread = TrackerThread(1, self, self.event_handler)
-            self.tracker_thread.start()
-        else:
-            self.cam = None
-            self.hand_tracker = None
         pygame.init()
 
         # make the screen and save the dimensions of your screen for fullscreen mode and resizing
@@ -52,11 +46,13 @@ class Game:
 
         self.level = Level(level_0, self.game_screen)
         self.player = self.level.player
-        self.ghosts = self.level.ghosts
+        self.ghosts = self.level.tiles['ghosts']
+
+        if use_tracking:
+            self.tracker_thread = TrackerThread(1, self, self.event_handler)
+            self.tracker_thread.start()
 
         self.ui = UI()
-        intro = pygame.mixer.Sound('../sfx/intro.wav')
-        intro.play()
 
     def loop(self):
         # make sure we run at the right framerate
@@ -75,7 +71,9 @@ class Game:
         self.screen.blit(resized_screen, (self.resized_x_offset, self.resized_y_offset))
 
         # draw the ui
-        self.ui.draw(self.level, self.screen, self.resized_x_offset)
+        trailing_space = self.screen.get_width() - self.resized_x_offset - self.resized_width
+        self.ui.draw(self.level, self.screen, self.resized_x_offset, trailing_space)
+
 
         # draw the tracking result in the black area on the left
         if use_tracking and self.tracker_thread.tracking_result is not None:
