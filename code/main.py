@@ -136,30 +136,15 @@ class TrackerThread(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = thread_id
         self.cam = Camera(webcam_id)
-        self.hand_tracker = HandTracker()
-        self.game_instance = game_instance
         self.event_handler = event_handler
+        self.hand_tracker = HandTracker(event_handler)
+        self.game_instance = game_instance
         self.tracking_result = None
 
     def run(self):
         while self.game_instance.is_running:
             frame = self.cam.read_frame()
             self.tracking_result = self.hand_tracker.track_frame(frame, True)
-            self.check_for_events()
-
-    def check_for_events(self):
-        left_hand = self.hand_tracker.left_hand
-        right_hand = self.hand_tracker.right_hand
-        events = []
-        if left_hand.pointing is not left_hand.last_state:
-            events.append(EventTypes.LEFT_DOWN if left_hand.pointing else EventTypes.LEFT_UP)
-            left_hand.last_state = left_hand.pointing
-        if right_hand.pointing is not right_hand.last_state:
-            events.append(EventTypes.RIGHT_DOWN if right_hand.pointing else EventTypes.RIGHT_UP)
-            right_hand.last_state = right_hand.pointing
-
-        for event in events:
-            self.event_handler.emit(event)
 
 
 def convert_opencv_image_to_pygame(image):
