@@ -1,7 +1,7 @@
 import math
 import pygame
 
-from settings import ghost_tiles_to_follow, tile_size, vertical_tile_number, horizontal_tile_number
+from settings import ghost_tiles_to_follow, ghost_scare_timer
 from tiles import AnimatableTile
 from helpers import map_from_to, find_nearest_passage_to_vector
 
@@ -137,4 +137,8 @@ class Ghost(AnimatableTile):
 
     def scare(self):
         self.state = self.SCARED
-        self.scare_cooldown = 500
+        self.scare_cooldown = ghost_scare_timer
+
+    def find_scare_position(self, passages, player):
+        vector = (self.position-player.position)+self.position
+        return find_nearest_passage_to_vector(vector, passages)

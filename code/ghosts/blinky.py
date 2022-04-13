@@ -30,8 +30,7 @@ class Blinky(Ghost):
             target = find_scatter_position(passages)
             self.path = a_star_search(target, passages, self.grid_position)
         elif self.state == self.SCARED:
-            target = find_nearest_passage_to_vector(
-                self.position - player.position * horizontal_tile_number * tile_size, passages)
+            target = self.find_scare_position(passages, player)
             self.path = a_star_search(target, passages, self.grid_position)
         else:
             self.path = a_star_search(player, passages, self.grid_position)
